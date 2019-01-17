@@ -414,7 +414,7 @@ query = {
   'root-dir': root_dir,
 }
 
-url = "https://api.report.ci/publish"
+url = urllib.urlopen("https://api.report.ci/publish").geturl()
 
 if service and service in ["travis-ci" , "appveyor" , "circle-ci"]:
   query["build-id"] = build_id
