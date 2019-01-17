@@ -1,8 +1,24 @@
 #!/usr/bin/env python
 
 import os
-import urllib
+import sys
 import argparse
+import subprocess
+import re
+import fnmatch
+import urllib
+
+if sys.version_info >= (3, 0):
+  import urllib
+
+  from urllib.parse import urlencode
+  from urllib.request import Request, urlopen
+else:
+  from urllib import urlencode
+  import urllib2
+  from urllib2 import Request, urlopen
+
+
 
 env = os.environ
 
@@ -19,8 +35,8 @@ class bcolors:
 parser = argparse.ArgumentParser()
 
 
-parser.add_argument("-i", "--include", nargs='+', type=str, help="Files to include, can cointain unix-style wildcard.")
-parser.add_argument("-x", "--exclude", nargs='+', type=str, help="Files to exclude, can cointain unix-style wildcard.")
+parser.add_argument("-i", "--include", nargs='+', help="Files to include, can cointain unix-style wildcard. (default *.xml)", default=["*.xml"])
+parser.add_argument("-x", "--exclude", nargs='+', help="Files to exclude, can cointain unix-style wildcard.", default=[])
 
 parser.add_argument("-d", "--dir",   help="Directory to search for test reports, defaults to project root.")
 parser.add_argument("-t", "--token", help="Token to authenticate (not needed for public projects on appveyor, travis and circle-ci")
@@ -31,8 +47,9 @@ parser.add_argument("-c", "--ci_system", help="Set the CI System manually. Shoul
 parser.add_argument("-b", "--build_id", help="The identifer The Identifer for the build. When used on a CI system this will be automatically generated.")
 parser.add_argument("-s", "--sha", help="Specify the commit sha - normally determined by invoking git")
 
-parser.parse_args()
+args = parser.parse_args()
 
+root_dir = args.root_dir
 
 ## Alright, now detect the CI - thanks to codecov for the content
 
@@ -43,6 +60,9 @@ commit  = None
 build = None
 build_url = None
 search_in = None
+slug = None
+run_name = args.name
+build_id = None
 
 if "JENKINS_URL" in env:
   print (bcolors.HEADER + "    Jenkins CI detected." + bcolors.ENDC)
@@ -74,17 +94,19 @@ elif (env.get("CI") == "true") and (env.get("TRAVIS") == "true") and (env.get("S
 
   print(bcolors.HEADER + "    Travis CI detected." + bcolors.ENDC)
   # https://docs.travis-ci.com/user/environment-variables/
-  service="travis"
-  if "TRAVIS_PULL_REQUEST_SHA" in env:
+  service="travis-ci"
+  if "TRAVIS_PULL_REQUEST_SHA" in env and env.get('TRAVIS_PULL_REQUEST_SHA') != '':
     commit = env.get("TRAVIS_PULL_REQUEST_SHA")
   else:
-    commit=env.get("TRAVIS_COMMIT")
+    commit = env.get("TRAVIS_COMMIT")
 
   build=env.get("TRAVIS_JOB_NUMBER")
   pr=env.get("TRAVIS_PULL_REQUEST")
-  job=env.get("TRAVIS_JOB_ID")
+  build_id=env.get("TRAVIS_JOB_ID")
   slug=env.get("TRAVIS_REPO_SLUG")
   tag=env.get("TRAVIS_TAG")
+  root_dir=env.get("TRAVIS_BUILD_DIR")
+
   if env.get("TRAVIS_BRANCH") != env.get("TRAVIS_TAG") :
     branch=env.get("TRAVIS_BRANCH")
 
@@ -143,7 +165,7 @@ elif "CI" in env and "CIRCLECI" in env:
   # https://circleci.com/docs/environment-variables
   service = "circle-ci"
   branch = env.get("CIRCLE_BRANCH")
-  build = env.get("CIRCLE_BUILD_NUM")
+  build_id = env.get("CIRCLE_BUILD_NUM")
   job = env.get("CIRCLE_NODE_INDEX")
   pr = env.get("CIRCLE_PR_NUMBER")
   commit = env.get("CIRCLE_SHA1")
@@ -174,7 +196,7 @@ elif "CI" in env and "SEMAPHORE" in env:
   service = "semaphore"
   branch = env.get("BRANCH_NAME")
   build = env.get("SEMAPHORE_BUILD_NUMBER")
-  job = env.get("SEMAPHORE_CURRENT_THREAD")
+  build_id = env.get("SEMAPHORE_CURRENT_THREAD")
   pr = env.get("PULL_REQUEST_NUMBER")
   slug = env.get("SEMAPHORE_REPO_SLUG")
   commit = env.get("REVISION")
@@ -185,7 +207,7 @@ elif env.get("CI") == "true" and env.get("BUILDKITE"):
   service = "buildkite"
   branch = env.get("BUILDKITE_BRANCH")
   build  = env.get("BUILDKITE_BUILD_NUMBER")
-  job    = env.get("BUILDKITE_JOB_ID")
+  build_id = env.get("BUILDKITE_JOB_ID")
   build_url = urllib.urlencode(env.get("BUILDKITE_BUILD_URL"))
   slug = env.get("BUILDKITE_PROJECT_SLUG")
   commit = env.get("BUILDKITE_COMMIT")
@@ -218,7 +240,7 @@ elif env.get("CI") == "True" and env.get("APPVEYOR") == "True":
   # http://www.appveyor.com/docs/environment-variables
   service = "appveyor"
   branch = env.get("APPVEYOR_REPO_BRANCH")
-  build =urllib.urlencode(env.get("APPVEYOR_JOB_ID"))
+  build_id =urllib.urlencode(env.get("APPVEYOR_JOB_ID"))
   pr = env.get("APPVEYOR_PULL_REQUEST_NUMBER")
   commit = env.get("APPVEYOR_REPO_COMMIT")
 
@@ -290,3 +312,130 @@ elif "SYSTEM_TEAMFOUNDATIONSERVERURI" in env:
   branch = env.get("BUILD_SOURCEBRANCHNAME")
 else:
     print(bcolors.HEADER + "    No CI detected." + bcolors.ENDC)
+
+
+
+if args.sha:
+  commit = args.sha
+if not commit:
+  commit = subprocess.check_output("git rev-parse HEAD").decode()
+
+print (bcolors.OKBLUE + "    Commit hash: " + commit + bcolors.ENDC)
+
+if not root_dir:
+  root_dir = subprocess.check_output("git rev-parse --show-toplevel").decode().replace('\n', '')
+
+
+print (bcolors.OKBLUE + "    Root dir: " + root_dir + bcolors.ENDC)
+
+owner, repo = None, None
+if slug:
+  try:
+    (owner, repo) = slug.split('/')
+  except:
+    print (bcolors.WARNING + "Invalid Slug: '{0}'".format(slug) + bcolors.ENDC)
+
+if not owner or not repo:
+  remote_v = subprocess.check_output("git remote -v").decode()
+  match = re.search(r"https:\/\/github.com\/([-_A-Za-z0-9]+)\/([-._A-Za-z0-9]+)", remote_v)
+  if match:
+    owner = match.group(1)
+    repo  = match.group(2)
+  else:
+    match = re.search(r"git@github\.com:([-_A-Za-z0-9]+)\/([-._A-Za-z0-9]+)\.git", remote_v)
+    owner = match.group(1)
+    repo  = match.group(2)
+
+print (bcolors.OKBLUE + "    Project: " + owner + '/' + repo + bcolors.ENDC)
+
+
+boost_test = []
+
+# find
+def match_file(file):
+  match = False
+  for inc in args.include:
+    if fnmatch.fnmatch(file, inc):
+      match = True
+      break;
+
+  for exc in args.exclude:
+    if fnmatch.fnmatch(file, exc):
+      match = False
+      break;
+
+  return match
+
+
+for wk in os.walk(root_dir):
+  (path, subfolders, files) = wk
+  for file in files:
+    if match_file(file):
+        abs_file = os.path.join(path, file)
+        content = open(abs_file, "r").read()
+        if re.match("<(?:TestResult|TestLog)>\s*<TestSuite", content):
+          boost_test.append(content)
+          continue
+
+upload_content = "";
+content_type = ""
+
+if not args.framework:
+  # check for different test frameworks
+  if len(boost_test) > 0:
+    framework = "boost"
+    print(bcolors.HEADER + "Boost.test detected" + bcolors.ENDC)
+    content_type = "text/xml"
+    upload_content = "<root>" + "".join(boost_test) + "</root>";
+    if not run_name:
+      run_name = "boost.test"
+else:
+  framework = args.framework
+
+upload_content = upload_content.strip()
+
+if len(upload_content) == 0:
+  print(bcolors.FAIL + " no test data to upload.")
+  exit(1)
+
+if service and not args.name:
+  run_name += " [" + service + "]"
+
+headers = {}
+
+
+
+query = {
+  'framework': framework,
+  'run-name': run_name,
+  'owner': owner,
+  'repo': repo,
+  'head-sha': commit,
+  'root-dir': root_dir,
+}
+
+url = "https://api.report.ci/publish"
+
+if service and service in ["travis-ci" , "appveyor" , "circle-ci"]:
+  query["build-id"] = build_id
+  url += "/" + service
+
+request = Request(url + "?" + urlencode(query).encode(), upload_content, headers)
+if args.token:   request.add_header("Authorization",  "Bearer " + args.token)
+if content_type: request.add_header("Content-Type", content_type)
+
+
+try:
+  response = urlopen(request).read().decode()
+  print(bcolors.OKGREEN + "Published: '{0}".format(response) + bcolors.ENDC)
+  print(response)
+  exit(0)
+except Exception  as e:
+  print(bcolors.FAIL + "Publishing failed: {0} - '{1}'".format(e, e.read()))
+  exit(1)
+
+#curl -X POST -H "Authorization: Bearer hKXGvlPBS5PuAU5nz9umeZ5qiZGdSjg+tZ7iEwLZPDmu0As6H4D792TVQ3VKxBSz1r+3Y+RUvA==" "http://localhost:5000/report-ci/us-central1/publish?f
+# ramework=boost-test&
+# run-name=foo&
+# owner=report-ci&
+# repo=boost-example&head-sha=08ee402e089447cc25d0b0bf060b253c36b4647c&root-dir=C:/develop/report.examples/boost-example/&test" --data-binary @data.xml -H "Content-Type: text/xml" -v

@@ -1,0 +1,7 @@
+sudo: false
+language: python
+os:
+  - linux
+
+script:
+  - python ./upload.py --include boost-*.xml

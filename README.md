@@ -18,11 +18,6 @@ Thus reuploading a second check run to github will update the new run, while kee
 The token shall be passed as `Bearer` in the `Authorization` http header. 
 *Note that public projects work without a token on some CI systems.*
 
-### User-Agent
-
-If a known CI system is used, it's identifier (i.e. `appveyor`, `travis` or `circle-ci`) shall be sent
-in the `User-Agent` http header field.
-
 ### Parameters
 
 | Name | Description |
@@ -33,3 +28,4 @@ in the `User-Agent` http header field.
 | `head-sha' | The hash of the commit this build is done for |
 | `framework` | The framework identifier ['boost'] |
 | `root-dir` | The root directory of the git-project, needed the test framework uses absolute paths |
+| `service` | If a known CI system is used, it's identifier (i.e. `appveyor`, `travis` or `circle-ci`) | 
