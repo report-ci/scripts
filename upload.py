@@ -7,6 +7,7 @@ import subprocess
 import re
 import fnmatch
 import urllib
+import xml.etree.ElementTree as ET
 
 if sys.version_info >= (3, 0):
   import urllib
@@ -17,8 +18,6 @@ else:
   from urllib import urlencode
   import urllib2
   from urllib2 import Request, urlopen
-
-
 
 env = os.environ
 
@@ -350,6 +349,8 @@ print (bcolors.OKBLUE + "    Project: " + owner + '/' + repo + bcolors.ENDC)
 
 
 boost_test = []
+junit_test = []
+xunit_test = []
 
 # find
 def match_file(file):
@@ -366,29 +367,60 @@ def match_file(file):
 
   return match
 
+file_list = []
 
 for wk in os.walk(root_dir):
   (path, subfolders, files) = wk
-  for file in files:
-    if match_file(file):
-        abs_file = os.path.join(path, file)
-        content = open(abs_file, "r").read()
-        if re.match("<(?:TestResult|TestLog)>\s*<TestSuite", content):
-          boost_test.append(content)
-          continue
+  if fnmatch.fnmatch(path, "*/.git*"):
+    continue
 
-upload_content = "";
+  for file in files:
+    abs_file = os.path.join(path, file)
+    file_list.append(abs_file)
+    if match_file(abs_file):
+      content = open(abs_file, "r").read()
+      if re.match("(<\?[^?]*\?>\s*)?<(?:TestResult|TestLog)>\s*<TestSuite", content):
+        boost_test.append(content)
+        continue
+
+      if re.match("(<\?[^?]*\?>\s*)?<testsuite", content): #xUnit thingy
+        if  content.find("java.version") != -1 and content.find("org.junit") != -1:
+          junit_test.append(content)
+        else:
+          xunit_test.append(content)
+        continue
+
+upload_content = ""
 content_type = ""
 
 if not args.framework:
   # check for different test frameworks
-  if len(boost_test) > 0:
+  if len(junit_test) > 0:
+    framework = "junit"
+    print(bcolors.HEADER + "JUnit detected" + bcolors.ENDC)
+    content_type = "text/xml"
+    upload_content = "<root>" + "".join(xunit_test) + "".join(junit_test) + "".join(["\n    <file>{0}</file>".format(file) for file in file_list]) + "</root>";
+    if not run_name:
+      run_name = "JUnit"
+  elif len(xunit_test) > 0:
+    framework = "xunit"
+    print(bcolors.HEADER + "Unspecified xUnit detected" + bcolors.ENDC)
+    content_type = "text/xml"
+    upload_content = "<root>" + "".join(xunit_test) + "".join(["\n    <file>{0}</file>".format(file) for file in file_list]) + "</root>";
+    if not run_name:
+      run_name = "xunit"
+
+  elif len(boost_test) > 0:
     framework = "boost"
     print(bcolors.HEADER + "Boost.test detected" + bcolors.ENDC)
     content_type = "text/xml"
-    upload_content = "<root>" + "".join(boost_test) + "</root>";
+    upload_content = "<root>" + "".join(boost_test) + "</root>"
     if not run_name:
       run_name = "boost.test"
+
+  else:
+    print(bcolors.FAIL + "No framework selected and not " + bcolors.ENDC)
+    exit(1)
 else:
   framework = args.framework
 
@@ -402,8 +434,6 @@ if service and not args.name:
   run_name += " [" + service + "]"
 
 headers = {}
-
-
 
 query = {
   'framework': framework,
