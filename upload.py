@@ -391,15 +391,14 @@ for wk in os.walk(root_dir):
         continue
 
       if re.match("(<\?[^?]*\?>\s*)?<testsuite", content): #xUnit thingy
-        if content.find('"java.version"') != -1 and content.find(''"org.junit"'') != -1:
+        if content.find('"java.version"') != -1 and content.find('org.junit') != -1:
           junit_test.append(content)
+        elif content.find('"java.version"') != -1 and content.find('org.testng') != -1:
+          testng_test.append(content)
         else:
           xunit_test.append(content)
         continue
 
-      if re.match("(<\?[^?]*\?>\s*)?<testng-results", content): #xUnit thingy
-        testng_test.append(content)
-        continue
 
 upload_content = ""
 content_type = ""
@@ -414,8 +413,7 @@ if not args.framework:
     upload_content = "<root>" + "".join(testng_test) + "</root>"
     if not run_name:
       run_name = "testng";
-
-  if len(junit_test) > 0:
+  elif len(junit_test) > 0:
     framework = "junit"
     print(bcolors.HEADER + "JUnit detected" + bcolors.ENDC)
     content_type = "text/xml"
