@@ -36,7 +36,7 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("-i", "--include", nargs='+', help="Files to include, can cointain unix-style wildcard. (default *.xml)", default=["*.xml"])
 parser.add_argument("-x", "--exclude", nargs='+', help="Files to exclude, can cointain unix-style wildcard. [can also used ", default=[])
-parser.add_argument("-f", "--file_list", nargs='+', help="Extra list if a file lookup is needed as with junit.", default=[])
+parser.add_argument("-l", "--file_list", nargs='+', help="Extra list if a file lookup is needed as with junit.", default=[])
 
 parser.add_argument("-d", "--dir",   help="Directory to search for test reports, defaults to project root.")
 parser.add_argument("-t", "--token", help="Token to authenticate (not needed for public projects on appveyor, travis and circle-ci")
