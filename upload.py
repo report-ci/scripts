@@ -88,7 +88,7 @@ if "JENKINS_URL" in env:
     pr = env.get("CHANGE_ID")
 
   build=env.get("BUILD_NUMBER")
-  build_url=urllib.urlencode(env.get("BUILD_URL"))
+  build_url=urlencode(env.get("BUILD_URL"))
 
 elif (env.get("CI") == "true") and (env.get("TRAVIS") == "true") and (env.get("SHIPPABLE") != "true" ):
 
@@ -125,7 +125,7 @@ elif env.get("CI") == "true" and env.get("CI_NAME") == "codeship":
   service="codeship"
   branch=env.get("CI_BRANCH")
   build=env.get("CI_BUILD_NUMBER")
-  build_url=urllib.urlencode(env.get("CI_BUILD_URL"));
+  build_url=urlencode(env.get("CI_BUILD_URL"));
   commit=env.get("CI_COMMIT_ID")
 
 elif "CF_BUILD_URL" in env and "CF_BUILD_ID" in env:
@@ -134,7 +134,7 @@ elif "CF_BUILD_URL" in env and "CF_BUILD_ID" in env:
   service="codefresh"
   branch=env.get("CF_BRANCH")
   build=env.get("CF_BUILD_ID")
-  build_url=urllib.urlencode(env.get("CF_BUILD_URL"))
+  build_url=urlencode(env.get("CF_BUILD_URL"))
   commit=env.get("CF_REVISION")
 
 elif "TEAMCITY_VERSION" in env:
@@ -153,7 +153,7 @@ elif "TEAMCITY_VERSION" in env:
   service="teamcity"
   branch=env.get("TEAMCITY_BUILD_BRANCH")
   build=env.get("TEAMCITY_BUILD_ID")
-  build_url=urllib.urlencode(env.get("TEAMCITY_BUILD_URL"))
+  build_url=urlencode(env.get("TEAMCITY_BUILD_URL"))
   if "TEAMCITY_BUILD_COMMIT" in env:
     commit=env.get("TEAMCITY_BUILD_COMMIT")
   else:
@@ -185,7 +185,7 @@ elif env.get("CI") == "true" and env.get("BITRISE_IO") == "true":
   service = "bitrise"
   branch = env.get("BITRISE_GIT_BRANCH")
   build  = env.get("BITRISE_BUILD_NUMBER")
-  build_url =urllib.urlencode(env.get("BITRISE_BUILD_URL"))
+  build_url =urlencode(env.get("BITRISE_BUILD_URL"))
   pr = env.get("BITRISE_PULL_REQUEST")
   if "GIT_CLONE_COMMIT_HASH" in env:
     commit = env.get("GIT_CLONE_COMMIT_HASH")
@@ -208,7 +208,7 @@ elif env.get("CI") == "true" and env.get("BUILDKITE"):
   branch = env.get("BUILDKITE_BRANCH")
   build  = env.get("BUILDKITE_BUILD_NUMBER")
   build_id = env.get("BUILDKITE_JOB_ID")
-  build_url = urllib.urlencode(env.get("BUILDKITE_BUILD_URL"))
+  build_url = urlencode(env.get("BUILDKITE_BUILD_URL"))
   slug = env.get("BUILDKITE_PROJECT_SLUG")
   commit = env.get("BUILDKITE_COMMIT")
   if env.get("BUILDKITE_PULL_REQUEST") != "false":
@@ -223,7 +223,7 @@ elif env.get("CI") == "drone" or env.get("DRONE") == "true":
   service = "drone.io"
   branch = env.get("DRONE_BRANCH")
   build  = env.get("DRONE_BUILD_NUMBER")
-  build_url =urllib.urlencode(env.get("DRONE_BUILD_LINK"))
+  build_url =urlencode(env.get("DRONE_BUILD_LINK"))
   pr  = env.get("DRONE_PULL_REQUEST")
   job = env.get("DRONE_JOB_NUMBER")
   tag = env.get("DRONE_TAG")
@@ -240,7 +240,7 @@ elif env.get("CI") == "True" and env.get("APPVEYOR") == "True":
   # http://www.appveyor.com/docs/environment-variables
   service = "appveyor"
   branch = env.get("APPVEYOR_REPO_BRANCH")
-  build_id =urllib.urlencode(env.get("APPVEYOR_JOB_ID"))
+  build_id =urlencode(env.get("APPVEYOR_JOB_ID"))
   pr = env.get("APPVEYOR_PULL_REQUEST_NUMBER")
   commit = env.get("APPVEYOR_REPO_COMMIT")
 
@@ -265,7 +265,7 @@ elif env.get("SHIPPABLE") == "true":
   # http://docs.shippable.com/ci_configure/
   service = "shippable"
   build = env.get("BUILD_NUMBER")
-  build_url =urllib.urlencode(env.get("BUILD_URL"))
+  build_url =urlencode(env.get("BUILD_URL"))
   pr = env.get("PULL_REQUEST")
   slug = env.get("REPO_FULL_NAME")
   commit = env.get("COMMIT")
@@ -285,7 +285,7 @@ elif env.get("GREENHOUSE") == "true":
   service = "greenhouse"
   branch = "$GREENHOUSE_BRANCH"
   build = "$GREENHOUSE_BUILD_NUMBER"
-  build_url =urllib.urlencode(env.get("GREENHOUSE_BUILD_URL"))
+  build_url =urlencode(env.get("GREENHOUSE_BUILD_URL"))
   pr = "$GREENHOUSE_PULL_REQUEST"
   commit = "$GREENHOUSE_COMMIT"
   search_in = search_in + " " + env.get("GREENHOUSE_EXPORT_DIR")
