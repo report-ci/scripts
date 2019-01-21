@@ -222,7 +222,7 @@ elif env.get("CI") == "drone" or env.get("DRONE") == "true":
   # drone commits are not full shas
   service = "drone.io"
   branch = env.get("DRONE_BRANCH")
-  build  = env.get("DRONE_BUILD_NUMBER")
+  build_id  = env.get("DRONE_BUILD_NUMBER")
   build_url =urlencode(env.get("DRONE_BUILD_LINK"))
   pr  = env.get("DRONE_PULL_REQUEST")
   job = env.get("DRONE_JOB_NUMBER")
@@ -233,14 +233,14 @@ elif "HEROKU_TEST_RUN_BRANCH" in env:
   # https://devcenter.heroku.com/articles/heroku-ci#environment-variables
   service = "heroku"
   branch = env.get("HEROKU_TEST_RUN_BRANCH")
-  build  = env.get("HEROKU_TEST_RUN_ID")
+  build_id  = env.get("HEROKU_TEST_RUN_ID")
 
 elif env.get("CI") == "True" and env.get("APPVEYOR") == "True":
   print(bcolors.HEADER + "    Appveyor CI detected." + bcolors.ENDC)
   # http://www.appveyor.com/docs/environment-variables
   service = "appveyor"
   branch = env.get("APPVEYOR_REPO_BRANCH")
-  build=env.get("APPVEYOR_JOB_ID")
+  build_id = env.get("APPVEYOR_JOB_ID")
   pr = env.get("APPVEYOR_PULL_REQUEST_NUMBER")
   commit = env.get("APPVEYOR_REPO_COMMIT")
 
