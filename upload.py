@@ -384,7 +384,7 @@ for wk in os.walk(root_dir):
         continue
 
       if re.match("(<\?[^?]*\?>\s*)?<testsuite", content): #xUnit thingy
-        if  content.find("java.version") != -1 and content.find("org.junit") != -1:
+        if  content.find("java.version") != -1 and (content.find("org.junit") != -1 or content.find("org/junit") != 0 or content.find("org\\junit") != 0):
           junit_test.append(content)
         else:
           xunit_test.append(content)
