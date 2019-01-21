@@ -35,12 +35,13 @@ parser = argparse.ArgumentParser()
 
 
 parser.add_argument("-i", "--include", nargs='+', help="Files to include, can cointain unix-style wildcard. (default *.xml)", default=["*.xml"])
-parser.add_argument("-x", "--exclude", nargs='+', help="Files to exclude, can cointain unix-style wildcard.", default=[])
+parser.add_argument("-x", "--exclude", nargs='+', help="Files to exclude, can cointain unix-style wildcard. [can also used ", default=[])
+parser.add_argument("-f", "--file_list", nargs='+', help="Extra list if a file lookup is needed as with junit.", default=[])
 
 parser.add_argument("-d", "--dir",   help="Directory to search for test reports, defaults to project root.")
 parser.add_argument("-t", "--token", help="Token to authenticate (not needed for public projects on appveyor, travis and circle-ci")
 parser.add_argument("-n", "--name", help="Custom defined name of the upload when commiting several builds with the same environment")
-parser.add_argument("-f", "--framework", choices=["boost"], help="The used unit test framework - if not provided the script will try to determine it")
+parser.add_argument("-f", "--framework", choices=["boost", "junit", "testng" "xunit"], help="The used unit test framework - if not provided the script will try to determine it")
 parser.add_argument("-r", "--root_dir", help="The root directory of the git-project, to be used for aligning paths properly. Default is the git-root.")
 parser.add_argument("-c", "--ci_system", help="Set the CI System manually. Should not be needed")
 parser.add_argument("-b", "--build_id", help="The identifer The Identifer for the build. When used on a CI system this will be automatically generated.")
@@ -347,11 +348,6 @@ if not owner or not repo:
 
 print (bcolors.OKBLUE + "    Project: " + owner + '/' + repo + bcolors.ENDC)
 
-
-boost_test = []
-junit_test = []
-xunit_test = []
-
 # find
 def match_file(file):
   match = False
@@ -367,7 +363,11 @@ def match_file(file):
 
   return match
 
-file_list = []
+boost_test = []
+junit_test = []
+xunit_test = []
+testng_test = []
+file_list = args.file_list
 
 for wk in os.walk(root_dir):
   (path, subfolders, files) = wk
@@ -390,11 +390,31 @@ for wk in os.walk(root_dir):
           xunit_test.append(content)
         continue
 
+      if re.match("(<\?[^?]*\?>\s*)?<testsuite", content): #xUnit thingy
+        if content.find('"java.version"') != -1 and content.find(''"org.junit"'') != -1:
+          junit_test.append(content)
+        else:
+          xunit_test.append(content)
+        continue
+
+      if re.match("(<\?[^?]*\?>\s*)?<testng-results", content): #xUnit thingy
+        testng_test.append(content)
+        continue
+
 upload_content = ""
 content_type = ""
 
 if not args.framework:
   # check for different test frameworks
+
+  if len(testng_test) > 0:
+    framework = "ngtest"
+    print(bcolors.HEADER + "TestNG detected" + bcolors.ENDC)
+    content_type = "text/xml"
+    upload_content = "<root>" + "".join(testng_test) + "</root>"
+    if not run_name:
+      run_name = "testng";
+
   if len(junit_test) > 0:
     framework = "junit"
     print(bcolors.HEADER + "JUnit detected" + bcolors.ENDC)
