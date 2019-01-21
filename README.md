@@ -28,4 +28,5 @@ The token shall be passed as `Bearer` in the `Authorization` http header.
 | `head-sha' | The hash of the commit this build is done for |
 | `framework` | The framework identifier ['boost'] |
 | `root-dir` | The root directory of the git-project, needed the test framework uses absolute paths |
-| `service` | If a known CI system is used, it's identifier (i.e. `appveyor`, `travis` or `circle-ci`) | 
+| `service` | If a known CI system is used, it's identifier (i.e. `appveyor`, `travis` or `circle-ci`) |
+| `branch` | If a branch is known, this allows the usage of badges | 

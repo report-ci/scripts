@@ -107,7 +107,7 @@ elif (env.get("CI") == "true") and (env.get("TRAVIS") == "true") and (env.get("S
   tag=env.get("TRAVIS_TAG")
   root_dir=env.get("TRAVIS_BUILD_DIR")
 
-  if env.get("TRAVIS_BRANCH") != env.get("TRAVIS_TAG") :
+  if env.get("TRAVIS_BRANCH") != env.get("TRAVIS_TAG"):
     branch=env.get("TRAVIS_BRANCH")
 
 elif "DOCKER_REPO" in env:
@@ -460,6 +460,7 @@ query = {
   'repo': repo,
   'head-sha': commit,
   'root-dir': root_dir,
+  'branch': branch
 }
 
 url = urllib.urlopen("https://api.report.ci/publish").geturl()
