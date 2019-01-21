@@ -243,6 +243,7 @@ elif env.get("CI") == "True" and env.get("APPVEYOR") == "True":
   build_id = env.get("APPVEYOR_JOB_ID")
   pr = env.get("APPVEYOR_PULL_REQUEST_NUMBER")
   commit = env.get("APPVEYOR_REPO_COMMIT")
+  slug = env.get("APPVEYOR_REPO_NAME")
 
 elif env.get("CI") == "true" and "WERCKER_GIT_BRANCH" in env:
   print(bcolors.HEADER + "    Wercker CI detected." + bcolors.ENDC)
