@@ -240,7 +240,7 @@ elif env.get("CI") == "True" and env.get("APPVEYOR") == "True":
   # http://www.appveyor.com/docs/environment-variables
   service = "appveyor"
   branch = env.get("APPVEYOR_REPO_BRANCH")
-  build_id =urlencode(env.get("APPVEYOR_JOB_ID"))
+  build=env.get("APPVEYOR_JOB_ID")
   pr = env.get("APPVEYOR_PULL_REQUEST_NUMBER")
   commit = env.get("APPVEYOR_REPO_COMMIT")
 
