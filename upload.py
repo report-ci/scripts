@@ -170,6 +170,7 @@ elif "CI" in env and "CIRCLECI" in env:
   job = env.get("CIRCLE_NODE_INDEX")
   pr = env.get("CIRCLE_PR_NUMBER")
   commit = env.get("CIRCLE_SHA1")
+  root_dir = env.get("CIRCLE_WORKING_DIRECTORY")
 
 elif "BUDDYBUILD_BRANCH" in env:
   print(bcolors.HEADER + "    buddybuild detected." + bcolors.ENDC)
@@ -245,6 +246,7 @@ elif env.get("CI") == "True" and env.get("APPVEYOR") == "True":
   commit = env.get("APPVEYOR_REPO_COMMIT")
   slug = env.get("APPVEYOR_REPO_NAME")
   account_name = env.get("APPVEYOR_ACCOUNT_NAME")
+  root_dir = env.get("APPVEYOR_BUILD_FOLDER")
 
 elif env.get("CI") == "true" and "WERCKER_GIT_BRANCH" in env:
   print(bcolors.HEADER + "    Wercker CI detected." + bcolors.ENDC)
