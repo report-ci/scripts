@@ -170,7 +170,7 @@ elif "CI" in env and "CIRCLECI" in env:
   job = env.get("CIRCLE_NODE_INDEX")
   pr = env.get("CIRCLE_PR_NUMBER")
   commit = env.get("CIRCLE_SHA1")
-  root_dir = env.get("CIRCLE_WORKING_DIRECTORY")
+  root_dir = os.path.expanduser(env.get("CIRCLE_WORKING_DIRECTORY"))
   slug = env.get("CIRCLE_PROJECT_USERNAME") + "/" + env.get("CIRCLE_PROJECT_REPONAME")
 
 elif "BUDDYBUILD_BRANCH" in env:
@@ -442,7 +442,7 @@ if not args.framework:
       run_name = "boost.test"
 
   else:
-    print(bcolors.FAIL + "No framework selected and not " + bcolors.ENDC)
+    print(bcolors.FAIL + "No framework selected and not detected." + bcolors.ENDC)
     exit(1)
 else:
   framework = args.framework
