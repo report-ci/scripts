@@ -170,7 +170,6 @@ elif "CI" in env and "CIRCLECI" in env:
   job = env.get("CIRCLE_NODE_INDEX")
   pr = env.get("CIRCLE_PR_NUMBER")
   commit = env.get("CIRCLE_SHA1")
-  search_in = search_in + " " + env.get("CIRCLE_ARTIFACTS") + " " + env.get("CIRCLE_TEST_REPORTS")
 
 elif "BUDDYBUILD_BRANCH" in env:
   print(bcolors.HEADER + "    buddybuild detected." + bcolors.ENDC)
