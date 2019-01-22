@@ -241,7 +241,7 @@ elif env.get("CI") == "True" and env.get("APPVEYOR") == "True":
   # http://www.appveyor.com/docs/environment-variables
   service = "appveyor"
   branch = env.get("APPVEYOR_REPO_BRANCH")
-  build_id = env.get("APPVEYOR_JOB_ID")
+  build_id = env.get("APPVEYOR_BUILD_ID")
   pr = env.get("APPVEYOR_PULL_REQUEST_NUMBER")
   commit = env.get("APPVEYOR_REPO_COMMIT")
   slug = env.get("APPVEYOR_REPO_NAME")
@@ -464,7 +464,6 @@ query = {
   'head-sha': commit,
   'root-dir': root_dir,
   'branch': branch,
-  'slug' : slug,
   'account-name': account_name,
 }
 
