@@ -63,6 +63,7 @@ search_in = None
 slug = None
 run_name = args.name
 build_id = None
+account_name = None
 
 if "JENKINS_URL" in env:
   print (bcolors.HEADER + "    Jenkins CI detected." + bcolors.ENDC)
@@ -244,6 +245,7 @@ elif env.get("CI") == "True" and env.get("APPVEYOR") == "True":
   pr = env.get("APPVEYOR_PULL_REQUEST_NUMBER")
   commit = env.get("APPVEYOR_REPO_COMMIT")
   slug = env.get("APPVEYOR_REPO_NAME")
+  account_name = env.get("APPVEYOR_ACCOUNT_NAME")
 
 elif env.get("CI") == "true" and "WERCKER_GIT_BRANCH" in env:
   print(bcolors.HEADER + "    Wercker CI detected." + bcolors.ENDC)
@@ -461,7 +463,9 @@ query = {
   'repo': repo,
   'head-sha': commit,
   'root-dir': root_dir,
-  'branch': branch
+  'branch': branch,
+  'slug' : slug,
+  'account-name': account_name,
 }
 
 url = urllib.urlopen("https://api.report.ci/publish").geturl()
