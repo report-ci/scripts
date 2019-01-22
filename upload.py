@@ -170,7 +170,8 @@ elif "CI" in env and "CIRCLECI" in env:
   job = env.get("CIRCLE_NODE_INDEX")
   pr = env.get("CIRCLE_PR_NUMBER")
   commit = env.get("CIRCLE_SHA1")
-  root_dir = env.get("CIRCLE_WORKING_DIRECTORY")
+  root_dir = env.get("  CIRCLE_WORKING_DIRECTORY")
+  slug = env.get("CIRCLE_PROJECT_USERNAME") + "/" + env.get("CIRCLE_PROJECT_REPONAME")
 
 elif "BUDDYBUILD_BRANCH" in env:
   print(bcolors.HEADER + "    buddybuild detected." + bcolors.ENDC)
