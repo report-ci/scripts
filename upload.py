@@ -41,7 +41,7 @@ parser.add_argument("-l", "--file_list", nargs='+', help="Extra list if a file l
 parser.add_argument("-d", "--dir",   help="Directory to search for test reports, defaults to project root.")
 parser.add_argument("-t", "--token", help="Token to authenticate (not needed for public projects on appveyor, travis and circle-ci")
 parser.add_argument("-n", "--name", help="Custom defined name of the upload when commiting several builds with the same ci system")
-parser.add_argument("-f", "--framework", choices=["boost", "junit", "testng" "xunit"], help="The used unit test framework - if not provided the script will try to determine it")
+parser.add_argument("-f", "--framework", choices=["boost", "junit", "testng", "xunit", "cmocka"], help="The used unit test framework - if not provided the script will try to determine it")
 parser.add_argument("-r", "--root_dir", help="The root directory of the git-project, to be used for aligning paths properly. Default is the git-root.")
 parser.add_argument("-c", "--ci_system", help="Set the CI System manually. Should not be needed")
 parser.add_argument("-b", "--build_id", help="The identifer The Identifer for the build. When used on a CI system this will be automatically generated.")
@@ -375,6 +375,8 @@ boost_test = []
 junit_test = []
 xunit_test = []
 testng_test = []
+cmocka_test = []
+
 file_list = args.file_list
 
 for wk in os.walk(root_dir):
@@ -388,14 +390,8 @@ for wk in os.walk(root_dir):
     if match_file(abs_file):
       content = open(abs_file, "r").read()
       if re.match("(<\?[^?]*\?>\s*)?<(?:TestResult|TestLog)>\s*<TestSuite", content):
-        boost_test.append(content)
-        continue
 
-      if re.match("(<\?[^?]*\?>\s*)?<testsuite", content): #xUnit thingy
-        if  content.find("java.version") != -1 and (content.find("org.junit") != -1 or content.find("org/junit") != 0 or content.find("org\\junit") != 0):
-          junit_test.append(content)
-        else:
-          xunit_test.append(content)
+        boost_test.append(content)
         continue
 
       if re.match("(<\?[^?]*\?>\s*)?<testsuite", content): #xUnit thingy
@@ -407,6 +403,10 @@ for wk in os.walk(root_dir):
           xunit_test.append(content)
         continue
 
+      if re.match("(<\?[^?]*\?>\s*)?<testsuites>\s*<testsuite", content):
+        cmocka_test.append(content)
+        continue
+
 
 upload_content = ""
 content_type = ""
@@ -415,40 +415,44 @@ if not args.framework:
   # check for different test frameworks
 
   if len(testng_test) > 0:
-    framework = "ngtest"
+    framework = "testng"
     print(bcolors.HEADER + "TestNG detected" + bcolors.ENDC)
-    content_type = "text/xml"
-    upload_content = "<root>" + "".join(testng_test) + "</root>"
     if not run_name:
-      run_name = "testng";
+      run_name = "TestNG";
   elif len(junit_test) > 0:
     framework = "junit"
     print(bcolors.HEADER + "JUnit detected" + bcolors.ENDC)
-    content_type = "text/xml"
-    upload_content = "<root>" + "".join(xunit_test) + "".join(junit_test) + "".join(["\n    <file>{0}</file>".format(file) for file in file_list]) + "</root>";
     if not run_name:
       run_name = "JUnit"
   elif len(xunit_test) > 0:
     framework = "xunit"
     print(bcolors.HEADER + "Unspecified xUnit detected" + bcolors.ENDC)
-    content_type = "text/xml"
-    upload_content = "<root>" + "".join(xunit_test) + "".join(["\n    <file>{0}</file>".format(file) for file in file_list]) + "</root>";
     if not run_name:
-      run_name = "xunit"
+      run_name = "xUnit"
 
   elif len(boost_test) > 0:
     framework = "boost"
     print(bcolors.HEADER + "Boost.test detected" + bcolors.ENDC)
-    content_type = "text/xml"
-    upload_content = "<root>" + "".join(boost_test) + "</root>"
     if not run_name:
       run_name = "boost.test"
+
+  elif len(boost_test) > 0:
+    framework = "boost"
+    print(bcolors.HEADER + "Boost.test detected" + bcolors.ENDC)
+    if not run_name:
+      run_name = "CMocka"
 
   else:
     print(bcolors.FAIL + "No framework selected and not detected." + bcolors.ENDC)
     exit(1)
 else:
   framework = args.framework
+
+if (framework == "testng"):   content_type = "text/xml"; upload_content = "<root>" + "".join(testng_test) + "</root>"
+elif (framework == "junit"):  content_type = "text/xml"; upload_content = "<root>" + "".join(xunit_test) + "".join(junit_test) + "".join(["\n    <file>{0}</file>".format(file) for file in file_list]) + "</root>";
+elif (framework == "xunit"):  content_type = "text/xml"; upload_content = "<root>" + "".join(xunit_test) + "".join(junit_test) + "".join(["\n    <file>{0}</file>".format(file) for file in file_list]) + "</root>";
+elif (framework == "boost"):  content_type = "text/xml"; upload_content = "<root>" + "".join(boost_test) + "</root>"
+elif (framework == "cmocka"): content_type = "text/xml"; upload_content = "<root>" + "".join(boost_test) + "</root>"
 
 upload_content = upload_content.strip()
 
