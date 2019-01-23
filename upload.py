@@ -40,7 +40,7 @@ parser.add_argument("-l", "--file_list", nargs='+', help="Extra list if a file l
 
 parser.add_argument("-d", "--dir",   help="Directory to search for test reports, defaults to project root.")
 parser.add_argument("-t", "--token", help="Token to authenticate (not needed for public projects on appveyor, travis and circle-ci")
-parser.add_argument("-n", "--name", help="Custom defined name of the upload when commiting several builds with the same environment")
+parser.add_argument("-n", "--name", help="Custom defined name of the upload when commiting several builds with the same ci system")
 parser.add_argument("-f", "--framework", choices=["boost", "junit", "testng" "xunit"], help="The used unit test framework - if not provided the script will try to determine it")
 parser.add_argument("-r", "--root_dir", help="The root directory of the git-project, to be used for aligning paths properly. Default is the git-root.")
 parser.add_argument("-c", "--ci_system", help="Set the CI System manually. Should not be needed")
@@ -241,7 +241,10 @@ elif env.get("CI") == "True" and env.get("APPVEYOR") == "True":
   print(bcolors.HEADER + "    Appveyor CI detected." + bcolors.ENDC)
   # http://www.appveyor.com/docs/environment-variables
   service = "appveyor"
-  branch = env.get("APPVEYOR_REPO_BRANCH")
+  if "APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH" in env:
+    branch = env.get("APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH")
+  else:
+    branch = env.get("APPVEYOR_REPO_BRANCH")
   build_id = env.get("APPVEYOR_BUILD_ID")
   pr = env.get("APPVEYOR_PULL_REQUEST_NUMBER")
   commit = env.get("APPVEYOR_REPO_COMMIT")
