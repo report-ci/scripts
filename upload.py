@@ -400,8 +400,8 @@ else:
 
 for abs_file in file_list:
   if match_file(abs_file):
-    print("AbsFile " + abs_file)
     content = open(abs_file, "r").read()
+    complete_content.append(content)
     if re.match("(<\?[^?]*\?>\s*)?<(?:TestResult|TestLog)>\s*<TestSuite", content):
       boost_test.append(content)
       continue
@@ -420,7 +420,6 @@ for abs_file in file_list:
     if re.match('(<\?[^?]*\?>\s*)?<!-- Tests compiled with Criterion v[0-9.]+ -->\s*<testsuites name="Criterion Tests"', content):
       criterion_test.append(content)
 
-    complete_content.append(content)
 
 upload_content = ""
 content_type = ""
@@ -489,7 +488,7 @@ elif (framework == "unity"):
   if not run_name: run_name = "Unity"
 
 upload_content = upload_content.strip()
-print("Upload-Content " + upload_content);
+
 if len(upload_content) == 0:
   print(bcolors.FAIL + " No test data to upload.")
   exit(1)
@@ -510,13 +509,20 @@ query = {
   'account-name': account_name,
 }
 
-url = urlopen("https://api.report.ci/publish").geturl()
+url = "https://api.report.ci/publish"
+if sys.version_info >= (3, 0):
+  pass; #url = urllib.request.urlopen(url).geturl()
+else:
+  url = urllib.urlopen(url).geturl()
 
 if service and service in ["travis-ci" , "appveyor" , "circle-ci"]:
   query["build-id"] = build_id
   url += "/" + service
 
-request = Request(url + "?" + urlencode(query).encode(), upload_content, headers)
+
+uc =  bytes(upload_content, "utf8") if sys.version_info >= (3, 0) else upload_content
+
+request = Request(url + "?" + urlencode(query), uc , headers)
 if args.token:   request.add_header("Authorization",  "Bearer " + args.token)
 if content_type: request.add_header("Content-Type", content_type)
 
