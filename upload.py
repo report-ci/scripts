@@ -377,7 +377,7 @@ xunit_test = []
 testng_test = []
 cmocka_test = []
 criterion_test = []
-
+complete_content = []
 file_list = []
 
 if not args.file_list:
@@ -385,10 +385,10 @@ if not args.file_list:
     (path, subfolders, files) = wk
     if fnmatch.fnmatch(path, "*/.git*"):
       continue
-      for file in files:
-        abs_file = os.path.join(path, file)
-        if match_file(abs_file):
-          file_list.append(abs_file)
+    for file in files:
+      abs_file = os.path.join(path, file)
+      if match_file(abs_file):
+        file_list.append(abs_file)
 else:
   for file in file_list:
     abs = os.path.abspath(file)
@@ -399,12 +399,15 @@ else:
       file_list.append(abs)
 
 for abs_file in file_list:
-  file_list.append(abs_file)
   if match_file(abs_file):
+    print("AbsFile " + abs_file)
     content = open(abs_file, "r").read()
     if re.match("(<\?[^?]*\?>\s*)?<(?:TestResult|TestLog)>\s*<TestSuite", content):
-
       boost_test.append(content)
+      continue
+
+    if re.match("(<\?[^?]*\?>\s*)?<testsuites>\s*<testsuite", content):
+      cmocka_test.append(content)
       continue
 
     if re.match("(<\?[^?]*\?>\s*)?<testsuite", content): #xUnit thingy
@@ -414,14 +417,10 @@ for abs_file in file_list:
         testng_test.append(content)
       else:
         xunit_test.append(content)
-      continue
-
-    if re.match("(<\?[^?]*\?>\s*)?<testsuites>\s*<testsuite", content):
-      cmocka_test.append(content)
-      continue
     if re.match('(<\?[^?]*\?>\s*)?<!-- Tests compiled with Criterion v[0-9.]+ -->\s*<testsuites name="Criterion Tests"', content):
       criterion_test.append(content)
 
+    complete_content.append(content)
 
 upload_content = ""
 content_type = ""
@@ -461,38 +460,38 @@ else:
   print(bcolors.HEADER + framework + " selected" + bcolors.ENDC)
 
 if (framework == "testng"):
-  content_type = "text/xml";
+  content_type = "text/xml"
   upload_content = "<root>" + "".join(testng_test) + "</root>"
   if not run_name: run_name = "TestNG";
 elif (framework == "junit"):
-  content_type = "text/xml";
+  content_type = "text/xml"
   upload_content = "<root>" + "".join(xunit_test)  + "".join(junit_test) + "".join(["\n    <file>{0}</file>".format(file) for file in file_list]) + "</root>";
   if not run_name: run_name = "JUnit"
 elif (framework == "xunit"):
-  content_type = "text/xml";
+  content_type = "text/xml"
   upload_content = "<root>" + "".join(xunit_test)  + "".join(junit_test) + "".join(["\n    <file>{0}</file>".format(file) for file in file_list]) + "</root>";
   if not run_name: run_name = "xUnit"
 elif (framework == "boost"):
-  content_type = "text/xml";
+  content_type = "text/xml"
   upload_content = "<root>" + "".join(boost_test)  + "</root>"
   if not run_name: run_name = "boost.test"
 elif (framework == "cmocka"):
-  content_type = "text/xml";
+  content_type = "text/xml"
   upload_content = "<root>" + "".join(cmocka_test) + "</root>"
   if not run_name: run_name = "CMocka"
 elif (framework == "criterion"):
-  content_type = "text/xml";
+  content_type = "text/xml"
   upload_content = "<root>" + "".join(criterion_test) + "</root>"
   if not run_name: run_name = "Criterion"
 elif (framework == "unity"):
-  content_type = "text/plain";
-  upload_content = "\n".join(upload_content)
+  content_type = "text/plain"
+  upload_content = "\n".join(complete_content)
   if not run_name: run_name = "Unity"
 
 upload_content = upload_content.strip()
-
+print("Upload-Content " + upload_content);
 if len(upload_content) == 0:
-  print(bcolors.FAIL + " no test data to upload.")
+  print(bcolors.FAIL + " No test data to upload.")
   exit(1)
 
 if service and not args.name:
@@ -511,7 +510,7 @@ query = {
   'account-name': account_name,
 }
 
-url = urllib.urlopen("https://api.report.ci/publish").geturl()
+url = urlopen("https://api.report.ci/publish").geturl()
 
 if service and service in ["travis-ci" , "appveyor" , "circle-ci"]:
   query["build-id"] = build_id
