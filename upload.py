@@ -432,49 +432,62 @@ if not args.framework:
   if len(testng_test) > 0:
     framework = "testng"
     print(bcolors.HEADER + "TestNG detected" + bcolors.ENDC)
-    if not run_name:
-      run_name = "TestNG";
+
   elif len(junit_test) > 0:
     framework = "junit"
     print(bcolors.HEADER + "JUnit detected" + bcolors.ENDC)
-    if not run_name:
-      run_name = "JUnit"
+
   elif len(xunit_test) > 0:
     framework = "xunit"
     print(bcolors.HEADER + "Unspecified xUnit detected" + bcolors.ENDC)
-    if not run_name:
-      run_name = "xUnit"
 
   elif len(boost_test) > 0:
     framework = "boost"
     print(bcolors.HEADER + "Boost.test detected" + bcolors.ENDC)
-    if not run_name:
-      run_name = "boost.test"
 
   elif len(criterion_test) > 0:
     framework = "criterion"
     print(bcolors.HEADER + "Criterion detected" + bcolors.ENDC)
-    if not run_name:
-      run_name = "Criterion"
 
   elif len(cmocka_test) > 0:
     framework = "cmocka"
     print(bcolors.HEADER + "CMocka detected" + bcolors.ENDC)
-    if not run_name:
-      run_name = "CMocka"
 
   else:
     print(bcolors.FAIL + "No framework selected and not detected." + bcolors.ENDC)
     exit(1)
 else:
   framework = args.framework
+  print(bcolors.HEADER + framework + " selected" + bcolors.ENDC)
 
-if (framework == "testng"):      content_type = "text/xml"; upload_content = "<root>" + "".join(testng_test) + "</root>"
-elif (framework == "junit"):     content_type = "text/xml"; upload_content = "<root>" + "".join(xunit_test)  + "".join(junit_test) + "".join(["\n    <file>{0}</file>".format(file) for file in file_list]) + "</root>";
-elif (framework == "xunit"):     content_type = "text/xml"; upload_content = "<root>" + "".join(xunit_test)  + "".join(junit_test) + "".join(["\n    <file>{0}</file>".format(file) for file in file_list]) + "</root>";
-elif (framework == "boost"):     content_type = "text/xml"; upload_content = "<root>" + "".join(boost_test)  + "</root>"
-elif (framework == "cmocka"):    content_type = "text/xml"; upload_content = "<root>" + "".join(cmocka_test) + "</root>"
-elif (framework == "criterion"): content_type = "text/xml"; upload_content = "<root>" + "".join(criterion_test) + "</root>"
+if (framework == "testng"):
+  content_type = "text/xml";
+  upload_content = "<root>" + "".join(testng_test) + "</root>"
+  if not run_name: run_name = "TestNG";
+elif (framework == "junit"):
+  content_type = "text/xml";
+  upload_content = "<root>" + "".join(xunit_test)  + "".join(junit_test) + "".join(["\n    <file>{0}</file>".format(file) for file in file_list]) + "</root>";
+  if not run_name: run_name = "JUnit"
+elif (framework == "xunit"):
+  content_type = "text/xml";
+  upload_content = "<root>" + "".join(xunit_test)  + "".join(junit_test) + "".join(["\n    <file>{0}</file>".format(file) for file in file_list]) + "</root>";
+  if not run_name: run_name = "xUnit"
+elif (framework == "boost"):
+  content_type = "text/xml";
+  upload_content = "<root>" + "".join(boost_test)  + "</root>"
+  if not run_name: run_name = "boost.test"
+elif (framework == "cmocka"):
+  content_type = "text/xml";
+  upload_content = "<root>" + "".join(cmocka_test) + "</root>"
+  if not run_name: run_name = "CMocka"
+elif (framework == "criterion"):
+  content_type = "text/xml";
+  upload_content = "<root>" + "".join(criterion_test) + "</root>"
+  if not run_name: run_name = "Criterion"
+elif (framework == "unity"):
+  content_type = "text/plain";
+  upload_content = "\n".join(upload_content)
+  if not run_name: run_name = "Unity"
 
 upload_content = upload_content.strip()
 
