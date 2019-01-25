@@ -1,6 +1,5 @@
 sudo: false
-secure: "eI0SHCEY5njaZfkDZ8oStYoTb5gK4+Xwr2k2i7GS+Ts6NPsb6+TUF9E+n/tG3eBQev97YOKOQA+ZwxhxRjdEihZgok4oPKCTDrX2ST6PKHPYswH75p8jzOTM6++1vZlXxkRQcqJ6s3O4Serql6e1GuiLLWqTXcDqG++CeY/IoiZFZIxACM+lVgAuzfpylPdo01vIaHW29iim5lqWL1+L+gqR9Lfw6NUZB/gIcfz3/OOJTrt/15Zkv1KAkesmqpcWfmnZPIfnDPb60r19XHoQMcg3JHHcQDLsB8D5kA6+fMlojzuRkB90ebC9xyBPhJnF1ySwShk3PCpETzn+5WODXyDHwiQoIZjLyeJMwNaz0CubMO66MkPTThR1Rd2d97VBmKb2RhAa1mWD+Nu+Z4ah3H6EFZxv2kUEb3qe1Lk3LXw+RSqzDZNTyH4fLhWLLPzol7Mh7skpPVX0KhbIp2sidPB66ZeG1WHCvcxMQFkBYEi1Ka+oqGb6DOYTydJE1qQAlRR0BTbegERBXueR7aVtGWrLnHbNWX7A7ZnRAwOvBqrmcwbRkstCzxAWMS0ElQCbf7SpC8mD5FGAEPzoSDA+4VkUP5mvzYbIE1HKjf+SkGBk9UwrmQS3eb64LqW7uTs5Jdb9qZh7YC19CWaWWCjl3SA7eW0mHSb520p/uSsZozI="
-
+secure: "bBl0Z0Ehbenzril4KTvMFdHnFg8geHPCf0JDmsz8UHWwGIoAqHDDZo1YCuMJwmZYC9NBKNJfuuXFsNgAs/FUHE70N858Bst1QMATngJHkDCSydL0drSvUs/QVOcbaYmcWbCyEfzCQcTPthPmlz1MC5yTU406KiXmIR2xkJg7jSqeiGjbw2iHN1soPR52dLDxxXVZbl/Kk3cAanbitfzefTKg0VlSHkK5PWJ9mFFjcIbltaX3c7J6nHhDjcGUtLQ5u9gV5EfhHjuYM6A4J5d6NmeLJdrbwA2+LpLJD45PzHONEgMaoP+g8tjH7xcXf/66e4sWNK/G2FzJjSuHXDdjFtMHev6+025zRdPR7hkX8802Ba4wlX7P8CFdRHgClKGe47/Jv213+4+xargHx5W06JaH2LZo5gTVHr7GH/i34vgqAA9UwEKIPMvMVf8o/ORk2gzT1Tya0mUzl22YyGR7DvWVBpHPBxOCgx+Z8DEQDor7aXWk/nQBxe/mxjxCNlLp0nfYLoVGgH/vzfG/ZuivKG7rUow00Y8dTJT5D6CaSoa2dkcHtC2vIEfHh1WMnXNzwiJmYLAF6fxlBWPg3hO4ZUNnbLdK9XjrE7br66oIn7/KBIBws+pDNHnyY9+rlbzsbdHkSnZursRS9xHPKZInXXykY/UJG9pmGwtDVPfQZ8I="
 addons:
   apt:
     packages:
@@ -11,7 +10,6 @@ os:
   - linux
 
 script:
-  - python ./upload.py --include boost-*.xml
   - python ./queue.py --token $REPORT_CI_TOKEN --name "Only queued" > /dev/null
   - python ./queue.py --token $REPORT_CI_TOKEN --name "Queue -> InProgress" | grep -E '^\s*\{\s*"id"\s*:\s*([0-9]+)\s*\}\s*$' > job1.json
   - JOB1=$(jq '.id' < job1.json)
