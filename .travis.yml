@@ -14,15 +14,15 @@ script:
 - python ./queue.py --token $REPORT_CI_TOKEN --name "Only queued" > /dev/null
 - python ./queue.py --token $REPORT_CI_TOKEN --name "Queue -> InProgress" | grep -E '^\s*\{\s*"id"\s*:\s*([0-9]+)\s*\}\s*$' > job1.json
 - JOB1=$(jq '.id' < job1.json)
-- echo "JOB1: https://github.com/report-ci/scripts/runs/$JOB1"
+- echo "JOB1  https://github.com/report-ci/scripts/runs/$JOB1"
 - python ./queue.py --token $REPORT_CI_TOKEN -x ./README.md --name "Queue -> Cancelled" | grep -E '^\s*\{\s*"id"\s*:\s*([0-9]+)\s*\}\s*$' > job2.json
 - JOB2=$(jq '.id' < job2.json)
-- echo "JOB2: https://github.com/report-ci/scripts/runs/$JOB2"
+- echo "JOB2  https://github.com/report-ci/scripts/runs/$JOB2"
 - python ./start.py --token $REPORT_CI_TOKEN --check_run $JOB1
 - echo "Started JOB1"
 - python ./start.py --token $REPORT_CI_TOKEN --name "Start -> Cancelled" | grep -E '^\s*\{\s*"id"\s*:\s*([0-9]+)\s*\}\s*$' > job3.json
 - JOB3=$(jq '.id' < job3.json)
-- echo "JOB3: https://github.com/report-ci/scripts/runs/$JOB3"
+- echo "JOB3  https://github.com/report-ci/scripts/runs/$JOB3"
 - python ./cancel.py --token $REPORT_CI_TOKEN --check_run $JOB2
 - echo "Cancelled JOB2"
 - python ./cancel.py --token $REPORT_CI_TOKEN --check_run $JOB3
