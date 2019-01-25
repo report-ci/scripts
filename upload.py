@@ -411,9 +411,9 @@ for abs_file in file_list:
       continue
 
     if re.match("(<\?[^?]*\?>\s*)?<testsuite", content): #xUnit thingy
-      if content.find('"java.version"') != -1 and content.find('org.junit') != -1:
+      if content.find('"java.version"') != -1 and (content.find('org.junit') != -1 or content.find('org/junit') != -1 or content.find('org\\junit') != -1):
         junit_test.append(content)
-      elif content.find('"java.version"') != -1 and content.find('org.testng') != -1:
+      elif content.find('"java.version"') != -1 and (content.find('org.testng') != -1 or content.find('org/testng') != -1 or content.find('org\\testng') != -1):
         testng_test.append(content)
       else:
         xunit_test.append(content)
