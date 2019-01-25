@@ -42,14 +42,14 @@ parser.add_argument("-t", "--token", help="Token to authenticate (not needed for
 parser.add_argument("-n", "--name", help="Custom defined name of the upload when commiting several builds with the same ci system")
 parser.add_argument("-f", "--framework", choices=["boost", "junit", "testng", "xunit", "cmocka", "unity", "criterion"], help="The used unit test framework - if not provided the script will try to determine it")
 parser.add_argument("-r", "--root_dir", help="The root directory of the git-project, to be used for aligning paths properly. Default is the git-root.")
-parser.add_argument("-c", "--ci_system", help="Set the CI System manually. Should not be needed")
+parser.add_argument("-s", "--ci_system", help="Set the CI System manually. Should not be needed")
 parser.add_argument("-b", "--build_id", help="The identifer The Identifer for the build. When used on a CI system this will be automatically generated.")
-parser.add_argument("-s", "--sha", help="Specify the commit sha - normally determined by invoking git")
-parser.add_argument("-h", "--check_run", help="The check-run id used by github, used to update reports.")
+parser.add_argument("-a", "--sha", help="Specify the commit sha - normally determined by invoking git")
+parser.add_argument("-c", "--check_run", help="The check-run id used by github, used to update reports.")
 
 args = parser.parse_args()
 
-root_dir = args["root_dir"]
+root_dir = args.root_dir
 
 ## Alright, now detect the CI - thanks to codecov for the content
 
@@ -326,12 +326,12 @@ else:
 if args.sha:
   commit = args.sha
 if not commit:
-  commit = subprocess.check_output("git rev-parse HEAD").decode()
+  commit = subprocess.check_output(["git" ,"rev-parse", "HEAD"]).decode()
 
 print (bcolors.OKBLUE + "    Commit hash: " + commit + bcolors.ENDC)
 
 if not root_dir:
-  root_dir = subprocess.check_output("git rev-parse --show-toplevel").decode().replace('\n', '')
+  root_dir = subprocess.check_output(["git" ,"rev-parse", "--show-toplevel"]).decode().replace('\n', '')
 
 
 print (bcolors.OKBLUE + "    Root dir: " + root_dir + bcolors.ENDC)
@@ -344,7 +344,7 @@ if slug:
     print (bcolors.WARNING + "Invalid Slug: '{0}'".format(slug) + bcolors.ENDC)
 
 if not owner or not repo:
-  remote_v = subprocess.check_output("git remote -v").decode()
+  remote_v = subprocess.check_output(["git" ,"remote", "-v"]).decode()
   match = re.search(r"https:\/\/github.com\/([-_A-Za-z0-9]+)\/([-._A-Za-z0-9]+)", remote_v)
   if match:
     owner = match.group(1)
@@ -510,11 +510,13 @@ query = {
   'check-run-id': args.check_run
 }
 
-url = "https://api.report.ci/publish"
+url = "https://api.report.ci"
+
 if sys.version_info >= (3, 0):
-  pass; #url = urllib.request.urlopen(url).geturl()
+  url = urllib.request.urlopen(url).geturl()
 else:
   url = urllib.urlopen(url).geturl()
+url += 'publish'
 
 if service and service in ["travis-ci" , "appveyor" , "circle-ci"]:
   query["build-id"] = build_id
@@ -534,5 +536,7 @@ try:
   print(response)
   exit(0)
 except Exception  as e:
-  print(bcolors.FAIL + "Publishing failed: {0} - '{1}'".format(e, e.read()))
+  print(bcolors.FAIL + 'Publishing failed: {0}'.format(e) + bcolors.ENDC);
+  print(e.read())
+
   exit(1)

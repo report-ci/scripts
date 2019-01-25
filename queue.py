@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os
-import json
+import traceback
 import sys
 import argparse
 import subprocess
@@ -46,14 +46,14 @@ commit = None
 if args.sha:
   commit = args.sha
 if not commit:
-  commit = subprocess.check_output("git rev-parse HEAD").decode().strip()
+  commit = subprocess.check_output(["git" ,"rev-parse", "HEAD"]).decode().strip()
 
 print('{')
 print(bcolors.OKBLUE + '    CommitHash: ' + commit + '' + bcolors.ENDC)
 
 root_dir = args.root_dir
 if not root_dir:
-  root_dir = subprocess.check_output("git rev-parse --show-toplevel").decode().replace('\n', '')
+  root_dir = subprocess.check_output(["git" ,"rev-parse", "--show-toplevel"]).decode().replace('\n', '')
 
 
 print (bcolors.OKBLUE + '    RootDir: ' + root_dir + bcolors.ENDC)
@@ -67,7 +67,7 @@ if args.slug:
     exit(1)
 
 if not owner or not repo:
-  remote_v = subprocess.check_output("git remote -v").decode()
+  remote_v = subprocess.check_output(["git" ,"remote", "-v"]).decode()
   match = re.search(r"https:\/\/github.com\/([-_A-Za-z0-9]+)\/([-._A-Za-z0-9]+)", remote_v)
   if match:
     owner = match.group(1)
@@ -83,11 +83,19 @@ query = {
   'owner': owner,
   'repo': repo,
   'head-sha': commit,
-  'root-dir': root_dir,
-  'run-name': args.name
+  'root-dir': root_dir
 }
 
+if args.name:
+    query['run-name'] = args.name
+
+
 url = "https://api.report.ci/publish/queue"
+
+if sys.version_info >= (3, 0):
+  url = urllib.request.urlopen(url).geturl()
+else:
+  url = urllib.urlopen(url).geturl()
 
 upload_content = ""
 if args.text:
@@ -97,12 +105,17 @@ uc =  bytes(upload_content, "utf8") if sys.version_info >= (3, 0) else upload_co
 
 request = Request(url + "?" + urlencode(query), uc)
 request.add_header("Authorization",  "Bearer " + args.token)
+request.add_header("Content-Type",  "text/plain")
+request.get_method = lambda: 'POST';
 
 try:
+  print("URL: " + url)
+  print("Method: " + request.get_method())
   response = urlopen(request).read().decode()
   print ('    {0} '.format(response));
   exit(0)
 except Exception  as e:
   sys.stderr.write("Exception: " + str(e));
-  print(bcolors.FAIL + 'QueueingFailed: {0} - {1}'.format(e, e.read()))
+  print(bcolors.FAIL + 'Queueing failed: {0}'.format(e) + bcolors.ENDC);
+  print(e.read())
   exit(1)

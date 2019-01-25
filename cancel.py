@@ -46,13 +46,13 @@ commit = None
 if args.sha:
   commit = args.sha
 if not commit:
-  commit = subprocess.check_output("git rev-parse HEAD").decode().strip()
+  commit = subprocess.check_output(["git" ,"rev-parse", "HEAD"]).decode().strip()
 
 print(bcolors.OKBLUE + '    Commit hash: ' + commit + bcolors.ENDC)
 
 root_dir = args.root_dir
 if not root_dir:
-  root_dir = subprocess.check_output("git rev-parse --show-toplevel").decode().replace('\n', '')
+  root_dir = subprocess.check_output(["git" ,"rev-parse", "--show-toplevel"]).decode().replace('\n', '')
 
 
 print (bcolors.OKBLUE + "    Root dir: " + root_dir + bcolors.ENDC)
@@ -66,7 +66,7 @@ if args.slug:
     exit(1)
 
 if not owner or not repo:
-  remote_v = subprocess.check_output("git remote -v").decode()
+  remote_v = subprocess.check_output(["git" ,"remote", "-v"]).decode()
   match = re.search(r"https:\/\/github.com\/([-_A-Za-z0-9]+)\/([-._A-Za-z0-9]+)", remote_v)
   if match:
     owner = match.group(1)
@@ -85,10 +85,16 @@ query = {
   'root-dir': root_dir,
   'check-run-id': args.check_run,
   'token' : args.token,
-  'run-name': args.name
 }
 
+if args.name:
+    query['run-name'] = args.name
+
 url = "https://api.report.ci/publish/cancel"
+if sys.version_info >= (3, 0):
+  url = urllib.request.urlopen(url).geturl()
+else:
+  url = urllib.urlopen(url).geturl()
 
 upload_content = ""
 if args.text:
@@ -97,13 +103,15 @@ if args.text:
 uc =  bytes(upload_content, "utf8") if sys.version_info >= (3, 0) else upload_content
 
 request = Request(url + "?" + urlencode(query), uc)
-request.add_header("Authorization",  "Bearer " + args.token)
 request.get_method = lambda: 'PATCH';
+request.add_header("Authorization",  "Bearer " + args.token)
+request.add_header("Content-Type",  "text/plain")
 
 try:
   response = urlopen(request).read().decode()
   print(response)
   exit(0)
 except Exception  as e:
-  print(bcolors.FAIL + "Queueing failed: {0} - '{1}'".format(e, e.read()))
+  print(bcolors.FAIL + 'Cancelling failed: {0}'.format(e) + bcolors.ENDC);
+  print(e.read())
   exit(1)
