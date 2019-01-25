@@ -7,7 +7,6 @@ import subprocess
 import re
 import fnmatch
 import urllib
-import xml.etree.ElementTree as ET
 
 if sys.version_info >= (3, 0):
   import urllib
@@ -43,9 +42,10 @@ parser.add_argument("-t", "--token", help="Token to authenticate (not needed for
 parser.add_argument("-n", "--name", help="Custom defined name of the upload when commiting several builds with the same ci system")
 parser.add_argument("-f", "--framework", choices=["boost", "junit", "testng", "xunit", "cmocka", "unity", "criterion"], help="The used unit test framework - if not provided the script will try to determine it")
 parser.add_argument("-r", "--root_dir", help="The root directory of the git-project, to be used for aligning paths properly. Default is the git-root.")
-parser.add_argument("-c", "--ci_system", help="Set the CI System manually. Should not be needed")
+parser.add_argument("-s", "--ci_system", help="Set the CI System manually. Should not be needed")
 parser.add_argument("-b", "--build_id", help="The identifer The Identifer for the build. When used on a CI system this will be automatically generated.")
-parser.add_argument("-s", "--sha", help="Specify the commit sha - normally determined by invoking git")
+parser.add_argument("-a", "--sha", help="Specify the commit sha - normally determined by invoking git")
+parser.add_argument("-c", "--check_run", help="The check-run id used by github, used to update reports.")
 
 args = parser.parse_args()
 
@@ -326,12 +326,12 @@ else:
 if args.sha:
   commit = args.sha
 if not commit:
-  commit = subprocess.check_output("git rev-parse HEAD").decode()
+  commit = subprocess.check_output(["git" ,"rev-parse", "HEAD"]).decode()
 
 print (bcolors.OKBLUE + "    Commit hash: " + commit + bcolors.ENDC)
 
 if not root_dir:
-  root_dir = subprocess.check_output("git rev-parse --show-toplevel").decode().replace('\n', '')
+  root_dir = subprocess.check_output(["git" ,"rev-parse", "--show-toplevel"]).decode().replace('\n', '')
 
 
 print (bcolors.OKBLUE + "    Root dir: " + root_dir + bcolors.ENDC)
@@ -344,8 +344,8 @@ if slug:
     print (bcolors.WARNING + "Invalid Slug: '{0}'".format(slug) + bcolors.ENDC)
 
 if not owner or not repo:
-  remote_v = subprocess.check_output("git remote -v").decode()
-  match = re.search(r"https:\/\/github.com\/([-_A-Za-z0-9]+)\/([-._A-Za-z0-9]+)", remote_v)
+  remote_v = subprocess.check_output(["git" ,"remote", "-v"]).decode()
+  match = re.search(r"https:\/\/github.com\/([-_A-Za-z0-9]+)\/([-._A-Za-z0-9]+)\.git", remote_v)
   if match:
     owner = match.group(1)
     repo  = match.group(2)
@@ -507,13 +507,16 @@ query = {
   'root-dir': root_dir,
   'branch': branch,
   'account-name': account_name,
+  'check-run-id': args.check_run
 }
 
-url = "https://api.report.ci/publish"
+url = "https://api.report.ci"
+
 if sys.version_info >= (3, 0):
-  pass; #url = urllib.request.urlopen(url).geturl()
+  url = urllib.request.urlopen(url).geturl()
 else:
   url = urllib.urlopen(url).geturl()
+url += 'publish'
 
 if service and service in ["travis-ci" , "appveyor" , "circle-ci"]:
   query["build-id"] = build_id
@@ -533,11 +536,7 @@ try:
   print(response)
   exit(0)
 except Exception  as e:
-  print(bcolors.FAIL + "Publishing failed: {0} - '{1}'".format(e, e.read()))
-  exit(1)
+  print(bcolors.FAIL + 'Publishing failed: {0}'.format(e) + bcolors.ENDC);
+  print(e.read())
 
-#curl -X POST -H "Authorization: Bearer hKXGvlPBS5PuAU5nz9umeZ5qiZGdSjg+tZ7iEwLZPDmu0As6H4D792TVQ3VKxBSz1r+3Y+RUvA==" "http://localhost:5000/report-ci/us-central1/publish?f
-# ramework=boost-test&
-# run-name=foo&
-# owner=report-ci&
-# repo=boost-example&head-sha=08ee402e089447cc25d0b0bf060b253c36b4647c&root-dir=C:/develop/report.examples/boost-example/&test" --data-binary @data.xml -H "Content-Type: text/xml" -v
+  exit(1)
