@@ -7,7 +7,6 @@ import subprocess
 import re
 import fnmatch
 import urllib
-import xml.etree.ElementTree as ET
 
 if sys.version_info >= (3, 0):
   import urllib
@@ -46,10 +45,11 @@ parser.add_argument("-r", "--root_dir", help="The root directory of the git-proj
 parser.add_argument("-c", "--ci_system", help="Set the CI System manually. Should not be needed")
 parser.add_argument("-b", "--build_id", help="The identifer The Identifer for the build. When used on a CI system this will be automatically generated.")
 parser.add_argument("-s", "--sha", help="Specify the commit sha - normally determined by invoking git")
+parser.add_argument("-h", "--check_run", help="The check-run id used by github, used to update reports.")
 
 args = parser.parse_args()
 
-root_dir = args.root_dir
+root_dir = args["root_dir"]
 
 ## Alright, now detect the CI - thanks to codecov for the content
 
@@ -507,6 +507,7 @@ query = {
   'root-dir': root_dir,
   'branch': branch,
   'account-name': account_name,
+  'check-run-id': args.check_run
 }
 
 url = "https://api.report.ci/publish"
@@ -535,9 +536,3 @@ try:
 except Exception  as e:
   print(bcolors.FAIL + "Publishing failed: {0} - '{1}'".format(e, e.read()))
   exit(1)
-
-#curl -X POST -H "Authorization: Bearer hKXGvlPBS5PuAU5nz9umeZ5qiZGdSjg+tZ7iEwLZPDmu0As6H4D792TVQ3VKxBSz1r+3Y+RUvA==" "http://localhost:5000/report-ci/us-central1/publish?f
-# ramework=boost-test&
-# run-name=foo&
-# owner=report-ci&
-# repo=boost-example&head-sha=08ee402e089447cc25d0b0bf060b253c36b4647c&root-dir=C:/develop/report.examples/boost-example/&test" --data-binary @data.xml -H "Content-Type: text/xml" -v

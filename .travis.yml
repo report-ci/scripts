@@ -1,7 +1,31 @@
 sudo: false
+secure: "eI0SHCEY5njaZfkDZ8oStYoTb5gK4+Xwr2k2i7GS+Ts6NPsb6+TUF9E+n/tG3eBQev97YOKOQA+ZwxhxRjdEihZgok4oPKCTDrX2ST6PKHPYswH75p8jzOTM6++1vZlXxkRQcqJ6s3O4Serql6e1GuiLLWqTXcDqG++CeY/IoiZFZIxACM+lVgAuzfpylPdo01vIaHW29iim5lqWL1+L+gqR9Lfw6NUZB/gIcfz3/OOJTrt/15Zkv1KAkesmqpcWfmnZPIfnDPb60r19XHoQMcg3JHHcQDLsB8D5kA6+fMlojzuRkB90ebC9xyBPhJnF1ySwShk3PCpETzn+5WODXyDHwiQoIZjLyeJMwNaz0CubMO66MkPTThR1Rd2d97VBmKb2RhAa1mWD+Nu+Z4ah3H6EFZxv2kUEb3qe1Lk3LXw+RSqzDZNTyH4fLhWLLPzol7Mh7skpPVX0KhbIp2sidPB66ZeG1WHCvcxMQFkBYEi1Ka+oqGb6DOYTydJE1qQAlRR0BTbegERBXueR7aVtGWrLnHbNWX7A7ZnRAwOvBqrmcwbRkstCzxAWMS0ElQCbf7SpC8mD5FGAEPzoSDA+4VkUP5mvzYbIE1HKjf+SkGBk9UwrmQS3eb64LqW7uTs5Jdb9qZh7YC19CWaWWCjl3SA7eW0mHSb520p/uSsZozI="
+
+addons:
+  apt:
+    packages:
+      - jq
+
 language: python
 os:
   - linux
 
 script:
   - python ./upload.py --include boost-*.xml
+  - python ./queue.py --token $REPORT_CI_TOKEN --name "Only queued" > /dev/null
+  - python ./queue.py --token $REPORT_CI_TOKEN --name "Queue -> InProgress" | grep -E '^\s*\{\s*"id"\s*:\s*([0-9]+)\s*\}\s*$' > job1.json
+  - JOB1=$(jq '.id' < job1.json)
+  - echo "JOB1: https://github.com/report-ci/scripts/runs/$JOB1"
+  - python ./queue.py --token $REPORT_CI_TOKEN --name "Queue -> Cancelled" | grep -E '^\s*\{\s*"id"\s*:\s*([0-9]+)\s*\}\s*$' > job2.json
+  - JOB2=$(jq '.id' < job2.json)
+  - echo "JOB2: https://github.com/report-ci/scripts/runs/$JOB2"
+  - python ./start --token $REPORT_CI_TOKEN --check_run $JOB1
+  - echo "Started JOB1"
+  - python ./start.py --token $REPORT_CI_TOKEN --name "Start -> Cancelled" | grep -E '^\s*\{\s*"id"\s*:\s*([0-9]+)\s*\}\s*$' > job3.json
+  - JOB3=$(jq '.id' < job3.json)
+  - echo "JOB3: https://github.com/report-ci/scripts/runs/$JOB3"
+  - python ./cancel.py --token $REPORT_CI_TOKEN --check_run $JOB2
+  - echo "Cancelled JOB2"
+  - python ./cancel.py --token $REPORT_CI_TOKEN --check_run $JOB3
+  - echo "Cancelled JOB2"
+
