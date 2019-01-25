@@ -1,29 +1,31 @@
 sudo: false
-secure: "bBl0Z0Ehbenzril4KTvMFdHnFg8geHPCf0JDmsz8UHWwGIoAqHDDZo1YCuMJwmZYC9NBKNJfuuXFsNgAs/FUHE70N858Bst1QMATngJHkDCSydL0drSvUs/QVOcbaYmcWbCyEfzCQcTPthPmlz1MC5yTU406KiXmIR2xkJg7jSqeiGjbw2iHN1soPR52dLDxxXVZbl/Kk3cAanbitfzefTKg0VlSHkK5PWJ9mFFjcIbltaX3c7J6nHhDjcGUtLQ5u9gV5EfhHjuYM6A4J5d6NmeLJdrbwA2+LpLJD45PzHONEgMaoP+g8tjH7xcXf/66e4sWNK/G2FzJjSuHXDdjFtMHev6+025zRdPR7hkX8802Ba4wlX7P8CFdRHgClKGe47/Jv213+4+xargHx5W06JaH2LZo5gTVHr7GH/i34vgqAA9UwEKIPMvMVf8o/ORk2gzT1Tya0mUzl22YyGR7DvWVBpHPBxOCgx+Z8DEQDor7aXWk/nQBxe/mxjxCNlLp0nfYLoVGgH/vzfG/ZuivKG7rUow00Y8dTJT5D6CaSoa2dkcHtC2vIEfHh1WMnXNzwiJmYLAF6fxlBWPg3hO4ZUNnbLdK9XjrE7br66oIn7/KBIBws+pDNHnyY9+rlbzsbdHkSnZursRS9xHPKZInXXykY/UJG9pmGwtDVPfQZ8I="
+env:
+  global:
+    secure: BFkVp5pMBoDRLifsnv/BnVJa0C43upgcJtxhJ5N3RyEP0lo+xzdwGVnys+/RQAYQJuKpQnb4lNhVbnuCpJHhn5hjjOajKQaboNg31FCJK6e4l+f3eU2tX+yoClll5asxWFjrmpvipaJUHdRX4+jbcuugMj98iVn2drXYEx5WzmBkif2grYnUh2ZLm0587N8yZT8cD+ycb68jyws9u12cQWuukvGXKDhYbaENLqeiDU2wQlPsZ4LmeNt4acR89TxMuLBDtkg409kxox1ahaROZhiTgGJ+xiftAoErWMzSWuP1wAf52tYuyM2xk0WMhid2S1UftAaPDv2QFsfLWGjhKLHvdQrEoDSN0EThNxWiqQR3V7e0Z1N4K4Y+ENVqdGz+Z/tCvQGlck/rwZyM3PYqU+M0wfGH+U6ZYF1+Bbh/6spGP950AdUvFO0FnQhSFrxciwkNT1W2OIsd9z8VuBg5AGLhxOa92kBFkrP744kAheDOxHzij45aZn71X4peGl6Xz7FxMbdOjBcWaW6Ee64NLhO7vDBtGkl2LiAm5UH4BTK/a5aSlUaH4nyUMSbWgzCEUjHCGiuQszFIzk1okMQvTisEMBgsgRqd40hzDSkX37Cbka2yFLf9TbHBBM0F9Mfe7/QFGTGgtumcXFpVO6Wbulolv40Gm/sX1D/UWVEBfVw=
 addons:
   apt:
     packages:
-      - jq
-
+    - jq
 language: python
 os:
-  - linux
-
+- linux
 script:
-  - python ./queue.py --token $REPORT_CI_TOKEN --name "Only queued" > /dev/null
-  - python ./queue.py --token $REPORT_CI_TOKEN --name "Queue -> InProgress" | grep -E '^\s*\{\s*"id"\s*:\s*([0-9]+)\s*\}\s*$' > job1.json
-  - JOB1=$(jq '.id' < job1.json)
-  - echo "JOB1: https://github.com/report-ci/scripts/runs/$JOB1"
-  - python ./queue.py --token $REPORT_CI_TOKEN -x ./readme.md --name "Queue -> Cancelled" | grep -E '^\s*\{\s*"id"\s*:\s*([0-9]+)\s*\}\s*$' > job2.json
-  - JOB2=$(jq '.id' < job2.json)
-  - echo "JOB2: https://github.com/report-ci/scripts/runs/$JOB2"
-  - python ./start.py --token $REPORT_CI_TOKEN --check_run $JOB1
-  - echo "Started JOB1"
-  - python ./start.py --token $REPORT_CI_TOKEN --name "Start -> Cancelled" | grep -E '^\s*\{\s*"id"\s*:\s*([0-9]+)\s*\}\s*$' > job3.json
-  - JOB3=$(jq '.id' < job3.json)
-  - echo "JOB3: https://github.com/report-ci/scripts/runs/$JOB3"
-  - python ./cancel.py --token $REPORT_CI_TOKEN --check_run $JOB2
-  - echo "Cancelled JOB2"
-  - python ./cancel.py --token $REPORT_CI_TOKEN --check_run $JOB3
-  - echo "Cancelled JOB3"
-
+- python ./queue.py --token $REPORT_CI_TOKEN --name "Only queued" > /dev/null
+- python ./queue.py --token $REPORT_CI_TOKEN --name "Queue -> InProgress" | grep -E
+  '^\s*\{\s*"id"\s*:\s*([0-9]+)\s*\}\s*$' > job1.json
+- JOB1=$(jq '.id' < job1.json)
+- echo "JOB1: https://github.com/report-ci/scripts/runs/$JOB1"
+- python ./queue.py --token $REPORT_CI_TOKEN -x ./readme.md --name "Queue -> Cancelled"
+  | grep -E '^\s*\{\s*"id"\s*:\s*([0-9]+)\s*\}\s*$' > job2.json
+- JOB2=$(jq '.id' < job2.json)
+- echo "JOB2: https://github.com/report-ci/scripts/runs/$JOB2"
+- python ./start.py --token $REPORT_CI_TOKEN --check_run $JOB1
+- echo "Started JOB1"
+- python ./start.py --token $REPORT_CI_TOKEN --name "Start -> Cancelled" | grep -E
+  '^\s*\{\s*"id"\s*:\s*([0-9]+)\s*\}\s*$' > job3.json
+- JOB3=$(jq '.id' < job3.json)
+- echo "JOB3: https://github.com/report-ci/scripts/runs/$JOB3"
+- python ./cancel.py --token $REPORT_CI_TOKEN --check_run $JOB2
+- echo "Cancelled JOB2"
+- python ./cancel.py --token $REPORT_CI_TOKEN --check_run $JOB3
+- echo "Cancelled JOB3"
