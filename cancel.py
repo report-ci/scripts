@@ -67,7 +67,7 @@ if args.slug:
 
 if not owner or not repo:
   remote_v = subprocess.check_output(["git" ,"remote", "-v"]).decode()
-  match = re.search(r"https:\/\/github.com\/([-_A-Za-z0-9]+)\/([-._A-Za-z0-9]+)", remote_v)
+  match = re.search(r"https:\/\/github.com\/([-_A-Za-z0-9]+)\/([-._A-Za-z0-9]+)\.git", remote_v)
   if match:
     owner = match.group(1)
     repo  = match.group(2)
