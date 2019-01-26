@@ -40,7 +40,8 @@ parser.add_argument("-l", "--file_list", nargs='+', help="Explicit file list, if
 parser.add_argument("-d", "--dir",   help="Directory to search for test reports, defaults to project root.")
 parser.add_argument("-t", "--token", help="Token to authenticate (not needed for public projects on appveyor, travis and circle-ci")
 parser.add_argument("-n", "--name", help="Custom defined name of the upload when commiting several builds with the same ci system")
-parser.add_argument("-f", "--framework", choices=["boost", "junit", "testng", "xunit", "cmocka", "unity", "criterion"], help="The used unit test framework - if not provided the script will try to determine it")
+parser.add_argument("-f", "--framework", choices=["boost", "junit", "testng", "xunit", "cmocka", "unity", "criterion", "bandit", "catch"],
+                                        help="The used unit test framework - if not provided the script will try to determine it")
 parser.add_argument("-r", "--root_dir", help="The root directory of the git-project, to be used for aligning paths properly. Default is the git-root.")
 parser.add_argument("-s", "--ci_system", help="Set the CI System manually. Should not be needed")
 parser.add_argument("-b", "--build_id", help="The identifer The Identifer for the build. When used on a CI system this will be automatically generated.")
@@ -379,6 +380,7 @@ cmocka_test = []
 criterion_test = []
 complete_content = []
 file_list = []
+bandit = []
 
 if not args.file_list:
   for wk in os.walk(root_dir):
@@ -415,6 +417,8 @@ for abs_file in file_list:
         junit_test.append(content)
       elif content.find('"java.version"') != -1 and (content.find('org.testng') != -1 or content.find('org/testng') != -1 or content.find('org\\testng') != -1):
         testng_test.append(content)
+      elif content.find('"java.version"') == -1 and content.find('<testsuite name="bandit" tests="'):
+        bandit.append(content)
       else:
         xunit_test.append(content)
     if re.match('(<\?[^?]*\?>\s*)?<!-- Tests compiled with Criterion v[0-9.]+ -->\s*<testsuites name="Criterion Tests"', content):
@@ -435,6 +439,10 @@ if not args.framework:
     framework = "junit"
     print(bcolors.HEADER + "JUnit detected" + bcolors.ENDC)
 
+  elif len(bandit) > 0:
+    framework = "bandit"
+    print(bcolors.HEADER + "Bandit detected" + bcolors.ENDC)
+    
   elif len(xunit_test) > 0:
     framework = "xunit"
     print(bcolors.HEADER + "Unspecified xUnit detected" + bcolors.ENDC)
@@ -466,6 +474,9 @@ elif (framework == "junit"):
   content_type = "text/xml"
   upload_content = "<root>" + "".join(xunit_test)  + "".join(junit_test) + "".join(["\n    <file>{0}</file>".format(file) for file in file_list]) + "</root>";
   if not run_name: run_name = "JUnit"
+elif framework == "bandit":
+  content_type = "text/xml"
+  upload_content = "<root>" + "".join(bandit) + "</root>";
 elif (framework == "xunit"):
   content_type = "text/xml"
   upload_content = "<root>" + "".join(xunit_test)  + "".join(junit_test) + "".join(["\n    <file>{0}</file>".format(file) for file in file_list]) + "</root>";
