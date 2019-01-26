@@ -381,6 +381,7 @@ criterion_test = []
 complete_content = []
 file_list = []
 bandit = []
+catch_test = []
 
 if not args.file_list:
   for wk in os.walk(root_dir):
@@ -423,7 +424,8 @@ for abs_file in file_list:
         xunit_test.append(content)
     if re.match('(<\?[^?]*\?>\s*)?<!-- Tests compiled with Criterion v[0-9.]+ -->\s*<testsuites name="Criterion Tests"', content):
       criterion_test.append(content)
-
+    if re.match('(<\?[^?]*\?>\s*)?<Catch\s+name=', content):
+      catch_test.append(content);
 
 upload_content = ""
 content_type = ""
@@ -442,7 +444,7 @@ if not args.framework:
   elif len(bandit) > 0:
     framework = "bandit"
     print(bcolors.HEADER + "Bandit detected" + bcolors.ENDC)
-    
+
   elif len(xunit_test) > 0:
     framework = "xunit"
     print(bcolors.HEADER + "Unspecified xUnit detected" + bcolors.ENDC)
@@ -458,6 +460,10 @@ if not args.framework:
   elif len(cmocka_test) > 0:
     framework = "cmocka"
     print(bcolors.HEADER + "CMocka detected" + bcolors.ENDC)
+
+  elif len(catch_test) > 0:
+    framework = "catch";
+    print(bcolors.HEADER + "Catch detected" + bcolors.ENDC)
 
   else:
     print(bcolors.FAIL + "No framework selected and not detected." + bcolors.ENDC)
@@ -493,6 +499,10 @@ elif (framework == "criterion"):
   content_type = "text/xml"
   upload_content = "<root>" + "".join(criterion_test) + "</root>"
   if not run_name: run_name = "Criterion"
+elif (framework == "catch"):
+  content_type = "text/xml"
+  upload_content = "<root>" + "".join(criterion_test) + "</root>"
+  if not run_name: run_name = "Catch"
 elif (framework == "unity"):
   content_type = "text/plain"
   upload_content = "\n".join(complete_content)
