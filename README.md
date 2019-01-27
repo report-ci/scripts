@@ -25,7 +25,7 @@ The token shall be passed as `Bearer` in the `Authorization` http header.
 | `build-id` | The Build id used by the CI system when commiting data without a token |
 | `owner` | The github handle of the repository owner | 
 | `repo` | The repository name |
-| `head-sha' | The hash of the commit this build is done for |
+| `head-sha` | The hash of the commit this build is done for |
 | `framework` | The framework identifier ['boost'] |
 | `root-dir` | The root directory of the git-project, needed the test framework uses absolute paths |
 | `service` | If a known CI system is used, it's identifier (i.e. `appveyor`, `travis` or `circle-ci`) |
