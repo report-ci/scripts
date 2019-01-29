@@ -405,7 +405,20 @@ else:
 
 for abs_file in file_list:
   if match_file(abs_file):
-    content = open(abs_file, "r").read()
+    content = None
+    binary_content = open(abs_file, "rb").read()
+    try:
+      content = binary_content.decode('ascii')
+    except UnicodeDecodeError:
+      try:
+        content = binary_content.decode('utf-8')
+      except:
+        try:
+          content = binary_content.decode('utf-16')
+        except:
+          print(bcolors.FAIL + "Can't figure out encoding of file " + abs_file + ", ignoring it" + bcolors.ENDC)
+          continue
+
     complete_content.append(content)
     if re.match("(<\?[^?]*\?>\s*)?<(?:TestResult|TestLog)>\s*<TestSuite", content):
       boost_test.append(content)
