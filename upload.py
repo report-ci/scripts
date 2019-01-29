@@ -593,9 +593,15 @@ if content_type: request.add_header("Content-Type", content_type)
 
 
 try:
-  response = urlopen(request).read().decode()
-  print(bcolors.OKGREEN + "Published: '{0}".format(response) + bcolors.ENDC)
-  print(response)
+  response = urlopen(request).read()
+  try:
+    msg = response.decode('utf-8')
+    print(bcolors.OKGREEN + "Published: '{0}".format(msg) + bcolors.ENDC)
+    print(response)
+  except:
+    print(bcolors.OKGREEN + "Published: '{0}".format(msg) + bcolors.ENDC)
+    print(response)
+
   exit(0)
 except Exception  as e:
   print(bcolors.FAIL + 'Publishing failed: {0}'.format(e) + bcolors.ENDC);
