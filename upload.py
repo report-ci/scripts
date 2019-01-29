@@ -575,7 +575,7 @@ query = {
   'check-run-id': args.check_run
 }
 
-url = "https://api.report.ci/publish"
+url = "https://api.report.ci/publish/"
 
 if sys.version_info >= (3, 0):
   url = urllib.request.urlopen(url).geturl()
@@ -584,7 +584,7 @@ else:
 
 if service and service in ["travis-ci" , "appveyor" , "circle-ci"]:
   query["build-id"] = build_id
-  url += "/" + service
+  url += service + "/"
 
 uc =  bytes(upload_content, "utf8") if sys.version_info >= (3, 0) else upload_content
 
