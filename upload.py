@@ -40,7 +40,7 @@ parser.add_argument("-l", "--file_list", nargs='+', help="Explicit file list, if
 parser.add_argument("-d", "--dir",   help="Directory to search for test reports, defaults to project root.")
 parser.add_argument("-t", "--token", help="Token to authenticate (not needed for public projects on appveyor, travis and circle-ci")
 parser.add_argument("-n", "--name", help="Custom defined name of the upload when commiting several builds with the same ci system")
-parser.add_argument("-f", "--framework", choices=["boost", "junit", "testng", "xunit", "cmocka", "unity", "criterion", "bandit", "catch", "cppunit", "cute"],
+parser.add_argument("-f", "--framework", choices=["boost", "junit", "testng", "xunit", "cmocka", "unity", "criterion", "bandit", "catch", "cppunit", "cute", "cxxtest"],
                                         help="The used unit test framework - if not provided the script will try to determine it")
 parser.add_argument("-r", "--root_dir", help="The root directory of the git-project, to be used for aligning paths properly. Default is the git-root.")
 parser.add_argument("-s", "--ci_system", help="Set the CI System manually. Should not be needed")
@@ -383,7 +383,7 @@ file_list = []
 bandit = []
 catch_test = []
 cpputest = []
-
+cxxtest = []
 
 if not args.file_list:
   for wk in os.walk(root_dir):
@@ -423,8 +423,10 @@ for abs_file in file_list:
         testng_test.append(content)
       elif content.find('"java.version"') == -1 and content.find('<testsuite name="bandit" tests="'):
         bandit.append(content)
-      elif content.find('"java.version"') == -1 and content.find('<testcase classname="CppUTest"'):
+      elif content.find('"java.version"') == -1 and content.find('<testcase classname="cpputest"'):
         cpputest.append(content)
+      elif content.find('"java.version"') == -1 and content.find('<testsuite name="cxxtest"'): #maybe we an emit "cxxtest"
+        cxxtest.append(content)
       else:
         xunit_test.append(content)
     if re.match('(<\?[^?]*\?>\s*)?<!-- Tests compiled with Criterion v[0-9.]+ -->\s*<testsuites name="Criterion Tests"', content):
@@ -471,8 +473,12 @@ if not args.framework:
     print(bcolors.HEADER + "CMocka detected" + bcolors.ENDC)
 
   elif len(catch_test) > 0:
-    framework = "catch";
+    framework = "catch"
     print(bcolors.HEADER + "Catch detected" + bcolors.ENDC)
+
+  elif len(cxxtest) > 0:
+    framework = "cxxtest"
+    print(bcolors.HEADER + "CxxTest detected" + bcolors.ENDC)
 
   else:
     print(bcolors.FAIL + "No framework selected and not detected." + bcolors.ENDC)
@@ -524,6 +530,11 @@ elif (framework == "cute"):
   content_type = "text/xml"
   cpputest = "<root>" + "".join(cmocka_test) + "</root>"
   if not run_name: "Cute";
+elif framework == "cxxtest":
+  content_type = "text/xml"
+  cpputest = "<root>" + "".join(cxxtest) + "".join(xunit_test) + "</root>"
+  if not run_name: "CxxTest";
+
 
 upload_content = upload_content.strip()
 
