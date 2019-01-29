@@ -575,25 +575,22 @@ query = {
   'check-run-id': args.check_run
 }
 
-url = "https://api.report.ci"
+url = "https://api.report.ci/publish'"
 
 if sys.version_info >= (3, 0):
   url = urllib.request.urlopen(url).geturl()
 else:
   url = urllib.urlopen(url).geturl()
-url += 'publish'
 
 if service and service in ["travis-ci" , "appveyor" , "circle-ci"]:
   query["build-id"] = build_id
   url += "/" + service
-
 
 uc =  bytes(upload_content, "utf8") if sys.version_info >= (3, 0) else upload_content
 
 request = Request(url + "?" + urlencode(query), uc , headers)
 if args.token:   request.add_header("Authorization",  "Bearer " + args.token)
 if content_type: request.add_header("Content-Type", content_type)
-
 
 try:
   response = urlopen(request).read().decode()
