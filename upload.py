@@ -575,7 +575,7 @@ query = {
   'check-run-id': args.check_run
 }
 
-url = "https://api.report.ci/publish'"
+url = "https://api.report.ci/publish"
 
 if sys.version_info >= (3, 0):
   url = urllib.request.urlopen(url).geturl()
