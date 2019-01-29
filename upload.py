@@ -33,7 +33,7 @@ class bcolors:
 parser = argparse.ArgumentParser()
 
 
-parser.add_argument("-i", "--include", nargs='+', help="Files to include, can cointain unix-style wildcard. (default *.xml)", default=["*.xml", "*.out"])
+parser.add_argument("-i", "--include", nargs='+', help="Files to include, can cointain unix-style wildcard. (default *.xml)", default=["*.xml"])
 parser.add_argument("-x", "--exclude", nargs='+', help="Files to exclude, can cointain unix-style wildcard. [can also used ", default=[])
 parser.add_argument("-l", "--file_list", nargs='+', help="Explicit file list, if given include and exclude are ignored.", default=None)
 
@@ -412,10 +412,10 @@ for abs_file in file_list:
     except UnicodeDecodeError:
       try:
         content = binary_content.decode('utf-8')
-      except:
+      except UnicodeDecodeError:
         try:
           content = binary_content.decode('utf-16')
-        except:
+        except UnicodeDecodeError:
           print(bcolors.FAIL + "Can't figure out encoding of file " + abs_file + ", ignoring it" + bcolors.ENDC)
           continue
 
