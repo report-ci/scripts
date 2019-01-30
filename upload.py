@@ -43,7 +43,7 @@ parser.add_argument("-l", "--file_list", nargs='+', help="Explicit file list, if
 parser.add_argument("-d", "--dir",   help="Directory to search for test reports, defaults to project root.")
 parser.add_argument("-t", "--token", help="Token to authenticate (not needed for public projects on appveyor, travis and circle-ci")
 parser.add_argument("-n", "--name", help="Custom defined name of the upload when commiting several builds with the same ci system")
-parser.add_argument("-f", "--framework", choices=["boost", "junit", "testng", "xunit", "cmocka", "unity", "criterion", "bandit", "catch", "cpputest", "cute", "cxxtest", "gtest"],
+parser.add_argument("-f", "--framework", choices=["boost", "junit", "testng", "xunit", "cmocka", "unity", "criterion", "bandit", "catch", "cpputest", "cute", "cxxtest", "gtest", "qtest"],
                                         help="The used unit test framework - if not provided the script will try to determine it")
 parser.add_argument("-r", "--root_dir", help="The root directory of the git-project, to be used for aligning paths properly. Default is the git-root.")
 parser.add_argument("-s", "--ci_system", help="Set the CI System manually. Should not be needed")
@@ -385,6 +385,7 @@ file_list = []
 bandit = []
 catch_test = []
 cxxtest = []
+qtest = []
 
 if not args.file_list:
   for wk in os.walk(root_dir):
@@ -423,6 +424,10 @@ for abs_file in file_list:
     complete_content.append(content)
     if re.match(r"(<\?[^?]*\?>\s*)?<(?:TestResult|TestLog)>\s*<TestSuite", content):
       boost_test.append(content)
+      continue
+
+    if re.match(r"(<\?[^?]*\?>\s*)?<TestCase>") and (content.find("<QtVersion>") or content.find("<qtversion>")):
+      qtest.append(content)
       continue
 
     if re.match(r"(<\?[^?]*\?>\s*)?(<testsuites>\s*)?<testsuite[^>]", content): #xUnit thingy
@@ -477,6 +482,10 @@ if not args.framework:
   elif len(cxxtest) > 0:
     framework = "cxxtest"
     print(bcolors.HEADER + "CxxTest detected" + bcolors.ENDC)
+
+  elif len(qtest) > 0:
+    framework = "qtest"
+    print(bcolors.HEADER + "QTest detected" + bcolors.ENDC)
 
   else:
     print(bcolors.FAIL + "No framework selected and not detected." + bcolors.ENDC)
@@ -537,8 +546,10 @@ elif framework == "gtest":
   content_type = "text/xml"
   upload_content = "<root>" + "".join(xunit_test) + "</root>"
   if not run_name: run_name = "GoogleTest"
-
-
+elif framework == "gtest":
+  content_type = "text/xml"
+  upload_content = "<root>" + "".join(qtest) + "</root>"
+  if not run_name: run_name = "QTest"
 
 upload_content = upload_content.strip()
 
