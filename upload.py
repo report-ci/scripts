@@ -437,11 +437,11 @@ for abs_file in file_list:
         junit_test.append(content)
       elif content.find('"java.version"') != -1 and (content.find('org.testng') != -1 or content.find('org/testng') != -1 or content.find('org\\testng') != -1):
         testng_test.append(content)
-      elif content.find('"java.version"') == -1 and content.find('<testsuite name="bandit" tests="'):
+      elif content.find('"java.version"') == -1 and content.find('<testsuite name="bandit" tests="') != -1:
         bandit.append(content)
-      elif content.find('"java.version"') == -1 and content.find('<testcase classname="cpputest"'):
+      elif content.find('"java.version"') == -1 and content.find('<testcase classname="cpputest"') != -1:
         cpputest.append(content)
-      elif content.find('"java.version"') == -1 and content.find('<testsuite name="cxxtest"'): #maybe we an emit "cxxtest"
+      elif content.find('"java.version"') == -1 and content.find('<testsuite name="cxxtest"')  != -1: #maybe we an emit "cxxtest"
         cxxtest.append(content)
       else:
         xunit_test.append(content)
@@ -542,15 +542,15 @@ elif (framework == "unity"):
 elif (framework == "cpputest"):
   content_type = "text/xml"
   upload_content = "<root>" + "".join(cpputest) + "</root>"
-  if not run_name: run_name = "CppUTest";
+  if not run_name: run_name = "CppUTest"
 elif (framework == "cute"):
   content_type = "text/xml"
   upload_content = "<root>" + "".join(cmocka_test) + "</root>"
-  if not run_name: run_name = "Cute";
+  if not run_name: run_name = "Cute"
 elif framework == "cxxtest":
   content_type = "text/xml"
   upload_content = "<root>" + "".join(cxxtest) + "".join(xunit_test) + "</root>"
-  if not run_name: run_name = "CxxTest";
+  if not run_name: run_name = "CxxTest"
 
 
 upload_content = upload_content.strip()
