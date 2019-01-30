@@ -422,30 +422,28 @@ for abs_file in file_list:
           continue
 
     complete_content.append(content)
-    if re.match("(<\?[^?]*\?>\s*)?<(?:TestResult|TestLog)>\s*<TestSuite", content):
+    if re.match(r"(<\?[^?]*\?>\s*)?<(?:TestResult|TestLog)>\s*<TestSuite", content):
       boost_test.append(content)
       continue
 
-    if re.match("(<\?[^?]*\?>\s*)?<testsuites>\s*<testsuite", content):
+    if re.match(r"(<\?[^?]*\?>\s*)?<testsuites>\s*<testsuite", content):
       #this can also be cute it seems
       cmocka_test.append(content)
       continue
 
-    if re.match("(<\?[^?]*\?>\s*)?<testsuite", content): #xUnit thingy
+    if re.match(r"(<\?[^?]*\?>\s*)?<testsuite[^>]", content): #xUnit thingy
       if content.find('"java.version"') != -1 and (content.find('org.junit') != -1 or content.find('org/junit') != -1 or content.find('org\\junit') != -1):
         junit_test.append(content)
       elif content.find('"java.version"') != -1 and (content.find('org.testng') != -1 or content.find('org/testng') != -1 or content.find('org\\testng') != -1):
         testng_test.append(content)
       elif content.find('"java.version"') == -1 and content.find('<testsuite name="bandit" tests="') != -1:
         bandit.append(content)
-      elif content.find('"java.version"') == -1 and content.find('<testsuite name="cxxtest"')  != -1:
-        cxxtest.append(content)
       else:
         xunit_test.append(content)
 
-    if re.match('(<\?[^?]*\?>\s*)?<!-- Tests compiled with Criterion v[0-9.]+ -->\s*<testsuites name="Criterion Tests"', content):
+    if re.match(r'(<\?[^?]*\?>\s*)?<!-- Tests compiled with Criterion v[0-9.]+ -->\s*<testsuites name="Criterion Tests"', content):
       criterion_test.append(content)
-    if re.match('(<\?[^?]*\?>\s*)?<Catch\s+name=', content):
+    if re.match(r'(<\?[^?]*\?>\s*)?<Catch\s+name=', content):
       catch_test.append(content);
 
 upload_content = ""
@@ -543,7 +541,7 @@ elif (framework == "cute"):
   if not run_name: run_name = "Cute"
 elif framework == "cxxtest":
   content_type = "text/xml"
-  upload_content = "<root>" + "".join(cxxtest) +  "</root>"
+  upload_content = "<root>" + "".join(cxxtest) + "".join(xunit_test) + "</root>"
   if not run_name: run_name = "CxxTest"
 
 upload_content = upload_content.strip()
