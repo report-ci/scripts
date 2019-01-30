@@ -542,15 +542,15 @@ elif (framework == "unity"):
 elif (framework == "cpputest"):
   content_type = "text/xml"
   upload_content = "<root>" + "".join(cpputest) + "</root>"
-  if not run_name: "CppUTest";
+  if not run_name: run_name = "CppUTest";
 elif (framework == "cute"):
   content_type = "text/xml"
   upload_content = "<root>" + "".join(cmocka_test) + "</root>"
-  if not run_name: "Cute";
+  if not run_name: run_name = "Cute";
 elif framework == "cxxtest":
   content_type = "text/xml"
   upload_content = "<root>" + "".join(cxxtest) + "".join(xunit_test) + "</root>"
-  if not run_name: "CxxTest";
+  if not run_name: run_name = "CxxTest";
 
 
 upload_content = upload_content.strip()
@@ -559,7 +559,7 @@ if len(upload_content) == 0:
   print(bcolors.FAIL + " No test data to upload.")
   exit(1)
 
-if service and not args.name:
+if service and not args.name and run_name:
   run_name += " [" + service + "]"
 
 headers = {}
