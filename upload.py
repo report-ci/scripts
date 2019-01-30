@@ -43,7 +43,7 @@ parser.add_argument("-l", "--file_list", nargs='+', help="Explicit file list, if
 parser.add_argument("-d", "--dir",   help="Directory to search for test reports, defaults to project root.")
 parser.add_argument("-t", "--token", help="Token to authenticate (not needed for public projects on appveyor, travis and circle-ci")
 parser.add_argument("-n", "--name", help="Custom defined name of the upload when commiting several builds with the same ci system")
-parser.add_argument("-f", "--framework", choices=["boost", "junit", "testng", "xunit", "cmocka", "unity", "criterion", "bandit", "catch", "cpputest", "cute", "cxxtest"],
+parser.add_argument("-f", "--framework", choices=["boost", "junit", "testng", "xunit", "cmocka", "unity", "criterion", "bandit", "catch", "cpputest", "cute", "cxxtest", "gtest"],
                                         help="The used unit test framework - if not provided the script will try to determine it")
 parser.add_argument("-r", "--root_dir", help="The root directory of the git-project, to be used for aligning paths properly. Default is the git-root.")
 parser.add_argument("-s", "--ci_system", help="Set the CI System manually. Should not be needed")
@@ -379,7 +379,6 @@ boost_test = []
 junit_test = []
 xunit_test = []
 testng_test = []
-cmocka_test = []
 criterion_test = []
 complete_content = []
 file_list = []
@@ -426,12 +425,7 @@ for abs_file in file_list:
       boost_test.append(content)
       continue
 
-    if re.match(r"(<\?[^?]*\?>\s*)?<testsuites>\s*<testsuite", content):
-      #this can also be cute it seems
-      cmocka_test.append(content)
-      continue
-
-    if re.match(r"(<\?[^?]*\?>\s*)?<testsuite[^>]", content): #xUnit thingy
+    if re.match(r"(<\?[^?]*\?>\s*)?(<testsuites>\s*)?<testsuite[^>]", content): #xUnit thingy
       if content.find('"java.version"') != -1 and (content.find('org.junit') != -1 or content.find('org/junit') != -1 or content.find('org\\junit') != -1):
         junit_test.append(content)
       elif content.find('"java.version"') != -1 and (content.find('org.testng') != -1 or content.find('org/testng') != -1 or content.find('org\\testng') != -1):
@@ -475,11 +469,7 @@ if not args.framework:
   elif len(criterion_test) > 0:
     framework = "criterion"
     print(bcolors.HEADER + "Criterion detected" + bcolors.ENDC)
-
-  elif len(cmocka_test) > 0:
-    framework = "cmocka"
-    print(bcolors.HEADER + "CMocka detected" + bcolors.ENDC)
-
+  
   elif len(catch_test) > 0:
     framework = "catch"
     print(bcolors.HEADER + "Catch detected" + bcolors.ENDC)
@@ -517,7 +507,7 @@ elif (framework == "boost"):
   if not run_name: run_name = "boost.test"
 elif (framework == "cmocka"):
   content_type = "text/xml"
-  upload_content = "<root>" + "".join(cmocka_test) + "</root>"
+  upload_content = "<root>" + "".join(xunit_test) + "</root>"
   if not run_name: run_name = "CMocka"
 elif (framework == "criterion"):
   content_type = "text/xml"
@@ -537,12 +527,18 @@ elif (framework == "cpputest"):
   if not run_name: run_name = "CppUTest"
 elif (framework == "cute"):
   content_type = "text/xml"
-  upload_content = "<root>" + "".join(cmocka_test) + "</root>"
+  upload_content = "<root>" + "".join(xunit_test) + "</root>"
   if not run_name: run_name = "Cute"
 elif framework == "cxxtest":
   content_type = "text/xml"
   upload_content = "<root>" + "".join(cxxtest) + "".join(xunit_test) + "</root>"
   if not run_name: run_name = "CxxTest"
+elif framework == "gtest":
+  content_type = "text/xml"
+  upload_content = "<root>" + "".join(xunit_test) + "</root>"
+  if not run_name: run_name = "GoogleTest"
+
+
 
 upload_content = upload_content.strip()
 
