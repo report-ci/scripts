@@ -426,7 +426,7 @@ for abs_file in file_list:
       boost_test.append(content)
       continue
 
-    if re.match(r"(<\?[^?]*\?>\s*)?<TestCase>") and (content.find("<QtVersion>") or content.find("<qtversion>")):
+    if re.match(r"(<\?[^?]*\?>\s*)?<TestCase", content) and (content.find("<QtVersion>") or content.find("<qtversion>")):
       qtest.append(content)
       continue
 
@@ -546,7 +546,7 @@ elif framework == "gtest":
   content_type = "text/xml"
   upload_content = "<root>" + "".join(xunit_test) + "</root>"
   if not run_name: run_name = "GoogleTest"
-elif framework == "gtest":
+elif framework == "qtest":
   content_type = "text/xml"
   upload_content = "<root>" + "".join(qtest) + "</root>"
   if not run_name: run_name = "QTest"
