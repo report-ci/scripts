@@ -385,7 +385,6 @@ complete_content = []
 file_list = []
 bandit = []
 catch_test = []
-cpputest = []
 cxxtest = []
 
 if not args.file_list:
@@ -439,12 +438,11 @@ for abs_file in file_list:
         testng_test.append(content)
       elif content.find('"java.version"') == -1 and content.find('<testsuite name="bandit" tests="') != -1:
         bandit.append(content)
-      elif content.find('"java.version"') == -1 and content.find('<testcase classname="cpputest"') != -1:
-        cpputest.append(content)
-      elif content.find('"java.version"') == -1 and content.find('<testsuite name="cxxtest"')  != -1: #maybe we an emit "cxxtest"
+      elif content.find('"java.version"') == -1 and content.find('<testsuite name="cxxtest"')  != -1:
         cxxtest.append(content)
       else:
         xunit_test.append(content)
+
     if re.match('(<\?[^?]*\?>\s*)?<!-- Tests compiled with Criterion v[0-9.]+ -->\s*<testsuites name="Criterion Tests"', content):
       criterion_test.append(content)
     if re.match('(<\?[^?]*\?>\s*)?<Catch\s+name=', content):
@@ -467,10 +465,6 @@ if not args.framework:
   elif len(bandit) > 0:
     framework = "bandit"
     print(bcolors.HEADER + "Bandit detected" + bcolors.ENDC)
-
-  elif len(cpputest) > 0:
-    framework = "cpputest"
-    print(bcolors.HEADER + "CppUTest" + bcolors.ENDC)
 
   elif len(xunit_test) > 0:
     framework = "xunit"
@@ -541,7 +535,7 @@ elif (framework == "unity"):
   if not run_name: run_name = "Unity"
 elif (framework == "cpputest"):
   content_type = "text/xml"
-  upload_content = "<root>" + "".join(cpputest) + "</root>"
+  upload_content = "<root>" + "".join(xunit_test) + "</root>"
   if not run_name: run_name = "CppUTest"
 elif (framework == "cute"):
   content_type = "text/xml"
@@ -549,9 +543,8 @@ elif (framework == "cute"):
   if not run_name: run_name = "Cute"
 elif framework == "cxxtest":
   content_type = "text/xml"
-  upload_content = "<root>" + "".join(cxxtest) + "".join(xunit_test) + "</root>"
+  upload_content = "<root>" + "".join(cxxtest) +  "</root>"
   if not run_name: run_name = "CxxTest"
-
 
 upload_content = upload_content.strip()
 
