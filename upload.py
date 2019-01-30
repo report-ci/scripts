@@ -37,13 +37,13 @@ parser = argparse.ArgumentParser()
 
 
 parser.add_argument("-i", "--include", nargs='+', help="Files to include, can cointain unix-style wildcard. (default *.xml)", default=["*.xml"])
-parser.add_argument("-x", "--exclude", nargs='+', help="Files to exclude, can cointain unix-style wildcard. [can also used ", default=[])
+parser.add_argument("-x", "--exclude", nargs='+', help="Files to exclude, can cointain unix-style wildcard.", default=[])
 parser.add_argument("-l", "--file_list", nargs='+', help="Explicit file list, if given include and exclude are ignored.", default=None)
 
 parser.add_argument("-d", "--dir",   help="Directory to search for test reports, defaults to project root.")
 parser.add_argument("-t", "--token", help="Token to authenticate (not needed for public projects on appveyor, travis and circle-ci")
 parser.add_argument("-n", "--name", help="Custom defined name of the upload when commiting several builds with the same ci system")
-parser.add_argument("-f", "--framework", choices=["boost", "junit", "testng", "xunit", "cmocka", "unity", "criterion", "bandit", "catch", "cppunit", "cute", "cxxtest"],
+parser.add_argument("-f", "--framework", choices=["boost", "junit", "testng", "xunit", "cmocka", "unity", "criterion", "bandit", "catch", "cpputest", "cute", "cxxtest"],
                                         help="The used unit test framework - if not provided the script will try to determine it")
 parser.add_argument("-r", "--root_dir", help="The root directory of the git-project, to be used for aligning paths properly. Default is the git-root.")
 parser.add_argument("-s", "--ci_system", help="Set the CI System manually. Should not be needed")
@@ -513,7 +513,8 @@ elif (framework == "junit"):
   if not run_name: run_name = "JUnit"
 elif framework == "bandit":
   content_type = "text/xml"
-  upload_content = "<root>" + "".join(bandit) + "</root>";
+  upload_content = "<root>" + "".join(bandit) + "</root>"
+  if not run_name: run_name = "Bandit"
 elif (framework == "xunit"):
   content_type = "text/xml"
   upload_content = "<root>" + "".join(xunit_test)  + "".join(junit_test) + "".join(["\n    <file>{0}</file>".format(file) for file in file_list]) + "</root>";
