@@ -541,15 +541,15 @@ elif (framework == "unity"):
   if not run_name: run_name = "Unity"
 elif (framework == "cpputest"):
   content_type = "text/xml"
-  cpputest = "<root>" + "".join(cpputest) + "</root>"
+  upload_content = "<root>" + "".join(cpputest) + "</root>"
   if not run_name: "CppUTest";
 elif (framework == "cute"):
   content_type = "text/xml"
-  cpputest = "<root>" + "".join(cmocka_test) + "</root>"
+  upload_content = "<root>" + "".join(cmocka_test) + "</root>"
   if not run_name: "Cute";
 elif framework == "cxxtest":
   content_type = "text/xml"
-  cpputest = "<root>" + "".join(cxxtest) + "".join(xunit_test) + "</root>"
+  upload_content = "<root>" + "".join(cxxtest) + "".join(xunit_test) + "</root>"
   if not run_name: "CxxTest";
 
 
