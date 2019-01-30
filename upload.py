@@ -426,7 +426,7 @@ for abs_file in file_list:
       boost_test.append(content)
       continue
 
-    if re.match(r"(<\?[^?]*\?>\s*)?<TestCase", content) and (content.find("<QtVersion>") or content.find("<qtversion>")):
+    if re.match(r"(<\?[^?]*\?>\s*)?<TestCase", content) and (content.find("<QtVersion>") != -1 or content.find("<qtversion>") != -1):
       qtest.append(content)
       continue
 
