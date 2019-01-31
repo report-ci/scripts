@@ -579,6 +579,7 @@ elif framework == "qtest":
 elif framework == "go-test":
   content_type = "application/json"
   upload_content = json.dumps({'files' : file_list, 'test_data': go_test})
+  if not run_name: run_name = "Go";
 
 upload_content = upload_content.strip()
 if len(upload_content) == 0:
@@ -592,15 +593,17 @@ headers = {}
 
 query = {
   'framework': framework,
-  'run-name': run_name,
   'owner': owner,
   'repo': repo,
   'head-sha': commit,
   'root-dir': root_dir,
   'branch': branch,
   'account-name': account_name,
-  'check-run-id': args.check_run
 }
+
+if run_name: query['run-name'] = run_name
+if args.check_run: query['check-run-id'] = args.check_run
+
 
 url = "https://api.report.ci/publish/"
 
