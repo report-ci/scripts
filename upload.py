@@ -577,12 +577,10 @@ elif framework == "qtest":
   upload_content = "<root>" + "".join(qtest) + "</root>"
   if not run_name: run_name = "QTest"
 elif framework == "go-test":
-  content_type == "application/json"
-  upload_content = json.dumps({"files" : file_list, "test_data" : go_test})
-
+  content_type = "application/json"
+  upload_content = json.dumps({'files' : file_list, 'test_data': go_test})
 
 upload_content = upload_content.strip()
-
 if len(upload_content) == 0:
   print(bcolors.FAIL + " No test data to upload.")
   exit(1)
@@ -615,9 +613,10 @@ if service and service in ["travis-ci" , "appveyor" , "circle-ci"]:
   query["build-id"] = build_id
   url += service + "/"
 
-uc =  bytes(upload_content, "utf8") if sys.version_info >= (3, 0) else upload_content
+if sys.version_info >= (3, 0):
+  upload_content=  bytes(upload_content, "utf8")
 
-request = Request(url + "?" + urlencode(query), uc , headers)
+request = Request(url + "?" + urlencode(query), upload_content , headers)
 if args.token:   request.add_header("Authorization",  "Bearer " + args.token)
 if content_type: request.add_header("Content-Type", content_type)
 
