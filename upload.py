@@ -7,6 +7,7 @@ import subprocess
 import re
 import fnmatch
 import urllib
+import json
 
 if sys.version_info >= (3, 0):
   import urllib
@@ -36,14 +37,14 @@ class bcolors:
 parser = argparse.ArgumentParser()
 
 
-parser.add_argument("-i", "--include", nargs='+', help="Files to include, can cointain unix-style wildcard. (default *.xml)", default=["*.xml"])
+parser.add_argument("-i", "--include", nargs='+', help="Files to include, can cointain unix-style wildcard. (default *.xml)", default=["*.xml", "*.json"])
 parser.add_argument("-x", "--exclude", nargs='+', help="Files to exclude, can cointain unix-style wildcard.", default=[])
 parser.add_argument("-l", "--file_list", nargs='+', help="Explicit file list, if given include and exclude are ignored.", default=None)
 
 parser.add_argument("-d", "--dir",   help="Directory to search for test reports, defaults to project root.")
 parser.add_argument("-t", "--token", help="Token to authenticate (not needed for public projects on appveyor, travis and circle-ci")
 parser.add_argument("-n", "--name", help="Custom defined name of the upload when commiting several builds with the same ci system")
-parser.add_argument("-f", "--framework", choices=["boost", "junit", "testng", "xunit", "cmocka", "unity", "criterion", "bandit", "catch", "cpputest", "cute", "cxxtest", "gtest", "qtest"],
+parser.add_argument("-f", "--framework", choices=["boost", "junit", "testng", "xunit", "cmocka", "unity", "criterion", "bandit", "catch", "cpputest", "cute", "cxxtest", "gtest", "qtest", "go"],
                                         help="The used unit test framework - if not provided the script will try to determine it")
 parser.add_argument("-r", "--root_dir", help="The root directory of the git-project, to be used for aligning paths properly. Default is the git-root.")
 parser.add_argument("-s", "--ci_system", help="Set the CI System manually. Should not be needed")
@@ -386,6 +387,7 @@ bandit = []
 catch_test = []
 cxxtest = []
 qtest = []
+go_test = []
 
 if not args.file_list:
   for wk in os.walk(root_dir):
@@ -405,6 +407,13 @@ else:
     else:
       file_list.append(abs)
 
+
+def loadJson(tup): #returning nothing if not loadable
+  try:
+    return json.loads(tup)
+  except:  # includes JSONDecodeError
+    return None
+
 for abs_file in file_list:
   if match_file(abs_file):
     content = None
@@ -422,28 +431,42 @@ for abs_file in file_list:
           continue
 
     complete_content.append(content)
-    if re.match(r"(<\?[^?]*\?>\s*)?<(?:TestResult|TestLog)>\s*<TestSuite", content):
-      boost_test.append(content)
-      continue
 
-    if re.match(r"(<\?[^?]*\?>\s*)?<TestCase", content) and (content.find("<QtVersion>") != -1 or content.find("<qtversion>") != -1):
-      qtest.append(content)
-      continue
+    if re.match(r"\s*<", content): #XML
+      if re.match(r"(<\?[^?]*\?>\s*)?<(?:TestResult|TestLog)>\s*<TestSuite", content):
+        boost_test.append(content)
+        continue
 
-    if re.match(r"(<\?[^?]*\?>\s*)?(<testsuites>\s*)?<testsuite[^>]", content): #xUnit thingy
-      if content.find('"java.version"') != -1 and (content.find('org.junit') != -1 or content.find('org/junit') != -1 or content.find('org\\junit') != -1):
-        junit_test.append(content)
-      elif content.find('"java.version"') != -1 and (content.find('org.testng') != -1 or content.find('org/testng') != -1 or content.find('org\\testng') != -1):
-        testng_test.append(content)
-      elif content.find('"java.version"') == -1 and content.find('<testsuite name="bandit" tests="') != -1:
-        bandit.append(content)
-      else:
-        xunit_test.append(content)
+      if re.match(r"(<\?[^?]*\?>\s*)?<TestCase", content) and (content.find("<QtVersion>") != -1 or content.find("<qtversion>") != -1):
+        qtest.append(content)
+        continue
 
-    if re.match(r'(<\?[^?]*\?>\s*)?<!-- Tests compiled with Criterion v[0-9.]+ -->\s*<testsuites name="Criterion Tests"', content):
-      criterion_test.append(content)
-    if re.match(r'(<\?[^?]*\?>\s*)?<Catch\s+name=', content):
-      catch_test.append(content);
+      if re.match(r"(<\?[^?]*\?>\s*)?(<testsuites>\s*)?<testsuite[^>]", content): #xUnit thingy
+        if content.find('"java.version"') != -1 and (content.find('org.junit') != -1 or content.find('org/junit') != -1 or content.find('org\\junit') != -1):
+          junit_test.append(content)
+        elif content.find('"java.version"') != -1 and (content.find('org.testng') != -1 or content.find('org/testng') != -1 or content.find('org\\testng') != -1):
+          testng_test.append(content)
+        elif content.find('"java.version"') == -1 and content.find('<testsuite name="bandit" tests="') != -1:
+          bandit.append(content)
+        else:
+          xunit_test.append(content)
+
+      if re.match(r'(<\?[^?]*\?>\s*)?<!-- Tests compiled with Criterion v[0-9.]+ -->\s*<testsuites name="Criterion Tests"', content):
+        criterion_test.append(content)
+      if re.match(r'(<\?[^?]*\?>\s*)?<Catch\s+name=', content):
+        catch_test.append(content)
+    elif re.match(r"\s*({|\[)", content): #Might be JSON, let's see if it fits go
+      try:
+        lines = content.splitlines();
+        json_lines = [json.loads(ln) for ln in lines]
+        if all(val in json_lines[0] for val in ["Time","Action","Package","Test"]): #assumption
+          go_test = go_test + [json.loads(ln) for ln in lines]
+        continue
+      except:
+        pass
+      #data = loadJson(content)
+
+
 
 upload_content = ""
 content_type = ""
@@ -487,6 +510,9 @@ if not args.framework:
     framework = "qtest"
     print(bcolors.HEADER + "QTest detected" + bcolors.ENDC)
 
+  elif len(go_test) > 0:
+    framework = "go-test"
+    print(bcolors.HEADER + "Go detected" + bcolors.ENDC)
   else:
     print(bcolors.FAIL + "No framework selected and not detected." + bcolors.ENDC)
     exit(1)
@@ -550,6 +576,10 @@ elif framework == "qtest":
   content_type = "text/xml"
   upload_content = "<root>" + "".join(qtest) + "</root>"
   if not run_name: run_name = "QTest"
+elif framework == "go-test":
+  content_type == "application/json"
+  upload_content = json.dumps({"files" : file_list, "test_data" : go_test})
+
 
 upload_content = upload_content.strip()
 
