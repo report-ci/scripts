@@ -457,16 +457,17 @@ for abs_file in file_list:
 
     elif re.match(r"\s*({|\[)", content): #Might be JSON, let's see if it fits go
       try:
-        lines = content.splitlines();
+        lines = content.splitlines()
         json_lines = [json.loads(ln) for ln in lines]
         if all(val in json_lines[0] for val in ["Time","Action","Package","Test"]): #assumption
           go_test = go_test + [json.loads(ln) for ln in lines]
-        continue
+          continue
       except:
         pass
       try:
         data = json.loads(content)
-        if "version" in data and "examples" in data and "summary" in data and "summary_line" in data and "profile" in data:
+
+        if "version" in data and "examples" in data and "summary" in data and "summary_line" in data :
           rspec.append(data);
           continue
       except:
@@ -523,7 +524,9 @@ if not args.framework:
   elif len(testunit) > 0:
     framework = "testunit"
     print(bcolors.HEADER + "TestUnit detected" + bcolors.ENDC)
-
+  elif len(rspec) > 0:
+    framework = "rspec"
+    print(bcolors.HEADER + "RSpec detected" + bcolors.ENDC)
   else:
     print(bcolors.FAIL + "No framework selected and not detected." + bcolors.ENDC)
     exit(1)
