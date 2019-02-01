@@ -577,7 +577,7 @@ elif (framework == "cpputest"):
 elif (framework == "minitest"):
   content_type = "text/xml"
   upload_content = "<root>" + "".join(xunit_test) + "</root>"
-  if not run_name: run_name = "Minitetss"
+  if not run_name: run_name = "Minitest"
 elif (framework == "cute"):
   content_type = "text/xml"
   upload_content = "<root>" + "".join(xunit_test) + "</root>"
