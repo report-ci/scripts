@@ -419,22 +419,24 @@ else:
 for abs_file in file_list:
   if match_file(abs_file):
     content = None
+
     ext = os.path.splitext(abs_file)[1].lower()
     binary_content = open(abs_file, "rb").read()
     try:
       content = binary_content.decode('ascii')
     except UnicodeDecodeError:
       try:
-        content = binary_content.decode('utf-8')
+        content = binary_content.decode('utf-8').encode("ascii","ignore").decode('ascii')
       except UnicodeDecodeError:
         try:
-          content = binary_content.decode('utf-16')
+          content = binary_content.decode('utf-16').encode("ascii","ignore").decode('ascii')
         except UnicodeDecodeError:
           print(bcolors.FAIL + "Can't figure out encoding of file " + abs_file + ", ignoring it" + bcolors.ENDC)
           continue
 
     complete_content.append(content)
-    if ext == ".xml" and re.match(r"\s*<", content): #XML
+
+    if ext == ".xml":
       if re.match(r"(<\?[^?]*\?>\s*)?<(?:TestResult|TestLog)>\s*<TestSuite", content):
         boost_test.append(content)
         continue
@@ -467,8 +469,7 @@ for abs_file in file_list:
          re.match(r'(<\?[^?]*\?>\s*)?<test-run id="2"', content):
         nunit.append(content)
         continue
-
-      if re.match(r'(<\?[^?]*\?>\s*)?<assemblies', content):
+      if re.match(r'(<\?[^?]*\?>)?\s*<assemblies', content):
         xunitnet.append(content)
         continue
 
@@ -493,7 +494,7 @@ for abs_file in file_list:
 
       #data = loadJson(content)
     elif ext == ".trx" and re.match(r"(<\?[^?]*\?>\s*)?<TestRun", content):
-      mstest.append([abs_file, content]);
+      mstest.append((abs_file, content))
 
 
 
@@ -649,9 +650,9 @@ elif framework == "mstest":
 
   filename = "",
   time = None
-  for [fn, content] in nunit:
+  for (fn, content) in mstest:
     time_ = os.path.getmtime(fn)
-    if time_ > time:
+    if time == None or time_ > time:
       filename = fn
       upload_content = content
       time_ = time
