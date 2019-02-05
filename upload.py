@@ -37,7 +37,7 @@ class bcolors:
 parser = argparse.ArgumentParser()
 
 
-parser.add_argument("-i", "--include", nargs='+', help="Files to include, can cointain unix-style wildcard. (default *.xml)", default=["*.xml", "*.json"])
+parser.add_argument("-i", "--include", nargs='+', help="Files to include, can cointain unix-style wildcard. (default *.xml)", default=["*.xml", "*.json", "*.trx"])
 parser.add_argument("-x", "--exclude", nargs='+', help="Files to exclude, can cointain unix-style wildcard.", default=[])
 parser.add_argument("-l", "--file_list", nargs='+', help="Explicit file list, if given include and exclude are ignored.", default=None)
 
@@ -45,7 +45,8 @@ parser.add_argument("-d", "--dir",   help="Directory to search for test reports,
 parser.add_argument("-t", "--token", help="Token to authenticate (not needed for public projects on appveyor, travis and circle-ci")
 parser.add_argument("-n", "--name", help="Custom defined name of the upload when commiting several builds with the same ci system")
 parser.add_argument("-f", "--framework", choices=["boost", "junit", "testng", "xunit", "cmocka", "unity", "criterion", "bandit",
-                                                  "catch", "cpputest", "cute", "cxxtest", "gtest", "qtest", "go", "testunit", "rspec", "minitest"],
+                                                  "catch", "cpputest", "cute", "cxxtest", "gtest", "qtest", "go", "testunit", "rspec", "minitest",
+                                                  "unit", "mstest", "xunitnet"],
                                         help="The used unit test framework - if not provided the script will try to determine it")
 parser.add_argument("-r", "--root_dir", help="The root directory of the git-project, to be used for aligning paths properly. Default is the git-root.")
 parser.add_argument("-s", "--ci_system", help="Set the CI System manually. Should not be needed")
@@ -392,6 +393,10 @@ go_test = []
 testunit = []
 rspec = []
 
+mstest   = []
+xunitnet = []
+nunit    = []
+
 if not args.file_list:
   for wk in os.walk(root_dir):
     (path, subfolders, files) = wk
@@ -414,6 +419,7 @@ else:
 for abs_file in file_list:
   if match_file(abs_file):
     content = None
+    ext = os.path.splitext(abs_file)[1].lower()
     binary_content = open(abs_file, "rb").read()
     try:
       content = binary_content.decode('ascii')
@@ -429,7 +435,7 @@ for abs_file in file_list:
 
     complete_content.append(content)
 
-    if re.match(r"\s*<", content): #XML
+    if ext == ".xml" and re.match(r"\s*<", content): #XML
       if re.match(r"(<\?[^?]*\?>\s*)?<(?:TestResult|TestLog)>\s*<TestSuite", content):
         boost_test.append(content)
         continue
@@ -447,15 +453,29 @@ for abs_file in file_list:
           bandit.append(content)
         else:
           xunit_test.append(content)
+        continue
 
       if re.match(r'(<\?[^?]*\?>\s*)?<!-- Tests compiled with Criterion v[0-9.]+ -->\s*<testsuites name="Criterion Tests"', content):
         criterion_test.append(content)
+        continue
       if re.match(r'(<\?[^?]*\?>\s*)?<Catch\s+name=', content):
         catch_test.append(content)
+      continue
       if re.match(r'(<\?[^?]*\?>\s*)?<stream>\s*<ready-test-suite>', content):
         testunit.append(content)
+        continue
 
-    elif re.match(r"\s*({|\[)", content): #Might be JSON, let's see if it fits go
+      if re.match(r'(<\?[^?]*\?>\s*)?(<!--This file represents the results of running a test suite-->)?<test-results\s+name', content) or \
+         re.match(r'(<\?[^?]*\?>\s*)?<test-run id="2"', content):
+        nunit.append(content)
+        continue
+
+      if re.match(r'(<\?[^?]*\?>\s*)?<assemblies', content):
+        xunitnet.append(content)
+        continue
+
+
+    elif ext == ".json" and re.match(r"\s*({|\[)", content): #Might be JSON, let's see if it fits go
       try:
         lines = content.splitlines()
         json_lines = [json.loads(ln) for ln in lines]
@@ -472,7 +492,10 @@ for abs_file in file_list:
           continue
       except:
         pass
+
       #data = loadJson(content)
+    elif ext == ".trx" and re.match(r"(<\?[^?]*\?>\s*)?<TestRun"):
+      mstest.append([abs_file, content]);
 
 
 
@@ -524,6 +547,19 @@ if not args.framework:
   elif len(testunit) > 0:
     framework = "testunit"
     print(bcolors.HEADER + "TestUnit detected" + bcolors.ENDC)
+
+  elif len(mstest) > 0:
+    framework = "mstest"
+    print(bcolors.HEADER + "MSTest detected" + bcolors.ENDC)
+
+  elif len(nunit) > 0:
+    framework = "nunit"
+    print(bcolors.HEADER + "NUnit detected" + bcolors.ENDC)
+
+  elif len(xunitnet) > 0:
+    framework = "xunitest"
+    print(bcolors.HEADER + "XUnit.net detected" + bcolors.ENDC)
+
   elif len(rspec) > 0:
     framework = "rspec"
     print(bcolors.HEADER + "RSpec detected" + bcolors.ENDC)
@@ -602,6 +638,29 @@ elif framework == "rspec":
   content_type = "application/json"
   upload_content = json.dumps(rspec)
   if not run_name: run_name = "RSpec";
+elif framework == "xunitnet":
+  content_type = "text/xml"
+  upload_content =  "<root>" + "".join(xunitnet) + "</root>"
+  if not run_name: run_name = "XUnit.Net";
+elif framework == "nunit":
+  content_type = "text/xml"
+  upload_content = "<root>" + "".join(nunit) + "</root>"
+  if not run_name: run_name = "NUnit";
+elif framework == "mstest":
+  content_type = "text/xml"
+
+  filename = "",
+  time = None
+  for [fn, content] in nunit:
+    time_ = os.path.getmtime(fn)
+    if time_ > time:
+      filename = fn
+      upload_content = content
+          time_ = time
+
+  print (bcolors.HEADER + "MSTest picked " + filename + bcolors.ENDC)
+  if not run_name: run_name = "MSTest";
+
 elif framework == "go-test":
   content_type = "application/json"
   upload_content = json.dumps({'files' : file_list, 'test_data': go_test})
