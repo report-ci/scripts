@@ -468,7 +468,6 @@ for abs_file in file_list:
       if re.match(r'(<\?[^?]*\?>\s*)?(<!--This file represents the results of running a test suite-->)?<test-results\s+name', content) or \
          re.match(r'(<\?[^?]*\?>\s*)?<test-run id="2"', content):
         nunit.append(content)
-        print("NUnit, " , content)
         continue
       if re.match(r'(<\?[^?]*\?>)?\s*<assemblies', content):
         xunitnet.append(content)
@@ -640,12 +639,13 @@ elif framework == "rspec":
   if not run_name: run_name = "RSpec";
 elif framework == "xunitnet":
   content_type = "text/xml"
+  print("XUnit.net: ", xunitnet)
   upload_content =  "<root>" + "".join(xunitnet) + "</root>"
-  if not run_name: run_name = "XUnit.Net";
+  if not run_name: run_name = "XUnit.Net"
 elif framework == "nunit":
   content_type = "text/xml"
   upload_content = "<root>" + "".join(nunit) + "</root>"
-  if not run_name: run_name = "NUnit";
+  if not run_name: run_name = "NUnit"
 elif framework == "mstest":
   content_type = "text/xml"
 
