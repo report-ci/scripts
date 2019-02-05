@@ -556,7 +556,7 @@ if not args.framework:
     print(bcolors.HEADER + "NUnit detected" + bcolors.ENDC)
 
   elif len(xunitnet) > 0:
-    framework = "xunitest"
+    framework = "xunitnet"
     print(bcolors.HEADER + "XUnit.net detected" + bcolors.ENDC)
 
   elif len(rspec) > 0:
@@ -639,7 +639,6 @@ elif framework == "rspec":
   if not run_name: run_name = "RSpec";
 elif framework == "xunitnet":
   content_type = "text/xml"
-  print("XUnit.net: ", xunitnet)
   upload_content =  "<root>" + "".join(xunitnet) + "</root>"
   if not run_name: run_name = "XUnit.Net"
 elif framework == "nunit":
