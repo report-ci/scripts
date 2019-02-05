@@ -434,7 +434,6 @@ for abs_file in file_list:
           continue
 
     complete_content.append(content)
-
     if ext == ".xml" and re.match(r"\s*<", content): #XML
       if re.match(r"(<\?[^?]*\?>\s*)?<(?:TestResult|TestLog)>\s*<TestSuite", content):
         boost_test.append(content)
@@ -460,11 +459,10 @@ for abs_file in file_list:
         continue
       if re.match(r'(<\?[^?]*\?>\s*)?<Catch\s+name=', content):
         catch_test.append(content)
-      continue
+        continue
       if re.match(r'(<\?[^?]*\?>\s*)?<stream>\s*<ready-test-suite>', content):
         testunit.append(content)
         continue
-
       if re.match(r'(<\?[^?]*\?>\s*)?(<!--This file represents the results of running a test suite-->)?<test-results\s+name', content) or \
          re.match(r'(<\?[^?]*\?>\s*)?<test-run id="2"', content):
         nunit.append(content)
@@ -494,7 +492,7 @@ for abs_file in file_list:
         pass
 
       #data = loadJson(content)
-    elif ext == ".trx" and re.match(r"(<\?[^?]*\?>\s*)?<TestRun"):
+    elif ext == ".trx" and re.match(r"(<\?[^?]*\?>\s*)?<TestRun", content):
       mstest.append([abs_file, content]);
 
 
