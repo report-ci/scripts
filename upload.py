@@ -656,7 +656,7 @@ elif framework == "mstest":
     if time_ > time:
       filename = fn
       upload_content = content
-          time_ = time
+      time_ = time
 
   print (bcolors.HEADER + "MSTest picked " + filename + bcolors.ENDC)
   if not run_name: run_name = "MSTest";
