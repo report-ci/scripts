@@ -468,6 +468,7 @@ for abs_file in file_list:
       if re.match(r'(<\?[^?]*\?>\s*)?(<!--This file represents the results of running a test suite-->)?<test-results\s+name', content) or \
          re.match(r'(<\?[^?]*\?>\s*)?<test-run id="2"', content):
         nunit.append(content)
+        print("NUnit, " , content)
         continue
       if re.match(r'(<\?[^?]*\?>)?\s*<assemblies', content):
         xunitnet.append(content)
