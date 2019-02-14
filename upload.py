@@ -663,6 +663,7 @@ elif framework == "mstest":
 elif framework == "go-test":
   content_type = "application/json"
   upload_content = json.dumps({'files' : file_list, 'test_data': go_test})
+  print ("UploadContent '" + upload_content + "'")
   if not run_name: run_name = "Go";
 
 upload_content = upload_content.strip()
