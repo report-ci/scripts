@@ -404,8 +404,7 @@ if not args.file_list:
       continue
     for file in files:
       abs_file = os.path.join(path, file)
-      if match_file(abs_file):
-        file_list.append(abs_file)
+      file_list.append(abs_file)
 else:
   for file in file_list:
     abs = os.path.abspath(file)
