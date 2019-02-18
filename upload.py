@@ -453,7 +453,7 @@ for abs_file in file_list:
         elif content.find('"java.version"') == -1 and content.find('<testsuite name="bandit" tests="') != -1:
           bandit.append(content)
         elif content.find('.php') != -1:
-          phpunit += 1;
+          phpunit += 1
           xunit_test.append(content)
         else:
           xunit_test.append(content)
@@ -519,6 +519,10 @@ if not args.framework:
     framework = "bandit"
     print(bcolors.HEADER + "Bandit detected" + bcolors.ENDC)
 
+  elif phpunit > 0:
+    framework = "phpunit"
+    print(bcolors.HEADER + "PHPUnit detected" + bcolors.ENDC)
+
   elif len(xunit_test) > 0:
     framework = "xunit"
     print(bcolors.HEADER + "Unspecified xUnit detected" + bcolors.ENDC)
@@ -557,10 +561,6 @@ if not args.framework:
   elif len(nunit) > 0:
     framework = "nunit"
     print(bcolors.HEADER + "NUnit detected" + bcolors.ENDC)
-
-  elif phpunit > 0:
-    framework = "phpunit"
-    print(bcolors.HEADER + "PHPUnit detected" + bcolors.ENDC)
 
   elif len(xunitnet) > 0:
     framework = "xunitnet"
