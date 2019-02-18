@@ -456,6 +456,9 @@ for abs_file in file_list:
         elif content.find('.php') != -1:
           phpunit += 1
           xunit_test.append(content)
+        elif content.find('.py') != -1:
+          pytest += 1
+          xunit_test.append(content)
         else:
           xunit_test.append(content)
         continue
