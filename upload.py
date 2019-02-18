@@ -652,7 +652,7 @@ elif framework == "nunit":
   content_type = "text/xml"
   upload_content = "<root>" + "".join(nunit) + "</root>"
   if not run_name: run_name = "NUnit"
-elif framework == "PHPUnit":
+elif framework == "phpunit":
   content_type = "text/xml"
   upload_content = "<root>" + "".join(xunit_test) + "</root>"
   if not run_name: run_name = "PHPUnit"
