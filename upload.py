@@ -458,7 +458,6 @@ for abs_file in file_list:
           xunit_test.append(content)
         elif content.find('.py') != -1:
           pytest += 1
-          xunit_test.append(content)
         else:
           xunit_test.append(content)
         continue
@@ -526,6 +525,11 @@ if not args.framework:
   elif phpunit > 0:
     framework = "phpunit"
     print(bcolors.HEADER + "PHPUnit detected" + bcolors.ENDC)
+
+  elif pytest > 0:
+    framework = "pytest"
+    print(bcolors.HEADER + "PyTest detected" + bcolors.ENDC)
+
 
   elif len(xunit_test) > 0:
     framework = "xunit"
