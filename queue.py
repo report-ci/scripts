@@ -35,6 +35,7 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("-t", "--token", help="Token to authenticate (not needed for public projects on appveyor, travis and circle-ci", required=True)
 parser.add_argument("-n", "--name", help="Custom name for the text run")
+parser.add_argument("-i", "--title", help="Custom output title")
 parser.add_argument("-r", "--root_dir", help="The root directory of the git-project, to be used for aligning paths properly. Default is the git-root.")
 parser.add_argument("-s", "--sha", help="Specify the commit sha - normally determined by invoking git")
 parser.add_argument("-u", "--slug", help="Slug of the reporistory, e.g. report-ci/scripts")
@@ -88,6 +89,9 @@ query = {
 
 if args.name:
     query['run-name'] = args.name
+
+if args.title:
+    query['title'] = args.title
 
 
 url = "https://api.report.ci/publish/queue"
