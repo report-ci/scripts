@@ -56,7 +56,6 @@ parser.add_argument("-c", "--check_run", help="The check-run id used by github, 
 
 args = parser.parse_args()
 
-root_dir = args.root_dir
 
 ## Alright, now detect the CI - thanks to codecov for the content
 
@@ -328,7 +327,8 @@ elif "SYSTEM_TEAMFOUNDATIONSERVERURI" in env:
 else:
     print(bcolors.HEADER + "    No CI detected." + bcolors.ENDC)
 
-
+if args.root_dir:
+  root_dir = args.root_dir
 
 if args.sha:
   commit = args.sha
@@ -770,7 +770,7 @@ if sys.version_info >= (3, 0):
 else:
   url = urllib.urlopen(url).geturl()
 
-if service and service in ["travis-ci" , "appveyor" , "circle-ci"]:
+if service and service in ["travis-ci" , "appveyor" , "circle-ci"] and args.token == None:
   query["build-id"] = build_id
   url += service + "/"
 
