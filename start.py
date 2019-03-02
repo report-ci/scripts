@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import json
 import os
 import sys
 import argparse
@@ -40,8 +40,15 @@ parser.add_argument("-s", "--sha", help="Specify the commit sha - normally deter
 parser.add_argument("-u", "--slug", help="Slug of the reporistory, e.g. report-ci/scripts")
 parser.add_argument("-c", "--check_run", help="The check-run id used by github, used to update reports.")
 parser.add_argument("-x", "--text", help="Text for the placeholder")
+parser.add_argument("-d", "--var_name" , help="The name of the environment variable to hold the job_id", default="REPORT_CI_CHECK_RUN_ID")
 
 args = parser.parse_args()
+
+if "REPORT_CI_TOKEN" in env and not args.token:
+  args.token = env["REPORT_CI_TOKEN"]
+
+if args.var_name in env and not args.check_run:
+  args.check_run = env[args.var_name]
 
 commit = None
 if args.sha:
@@ -116,6 +123,8 @@ if args.check_run:
 
 try:
   response = urlopen(request).read().decode()
+  json.loads(response)
+  env[args.var_name] = response["id"]
   print(response)
   exit(0)
 except Exception  as e:
