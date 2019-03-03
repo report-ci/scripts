@@ -53,9 +53,18 @@ parser.add_argument("-s", "--ci_system", help="Set the CI System manually. Shoul
 parser.add_argument("-b", "--build_id", help="The identifer The Identifer for the build. When used on a CI system this will be automatically generated.")
 parser.add_argument("-a", "--sha", help="Specify the commit sha - normally determined by invoking git")
 parser.add_argument("-c", "--check_run", help="The check-run id used by github, used to update reports.")
+parser.add_argument("-f", "--id_file" , help="The file to hold the check id given by github.", default=".report-ci-id.json")
 
 args = parser.parse_args()
 
+if "REPORT_CI_TOKEN" in env and not args.token:
+  args.token = env["REPORT_CI_TOKEN"]
+
+if not args.check_run:
+  try:
+    args.check_run = json.loads(open(args.id_file, "r").read())["id"]
+  except:
+    pass
 
 ## Alright, now detect the CI - thanks to codecov for the content
 
@@ -99,7 +108,7 @@ if "JENKINS_URL" in env:
     root_dir = env["WORKSPACE"]
 
   build=env.get("BUILD_NUMBER")
-  build_url=urlencode(env.get("BUILD_URL"))
+  #build_url=urlencode(env.get("BUILD_URL"))
 
 elif (env.get("CI") == "true") and (env.get("TRAVIS") == "true") and (env.get("SHIPPABLE") != "true" ):
 
@@ -136,7 +145,7 @@ elif env.get("CI") == "true" and env.get("CI_NAME") == "codeship":
   service="codeship"
   branch=env.get("CI_BRANCH")
   build=env.get("CI_BUILD_NUMBER")
-  build_url=urlencode(env.get("CI_BUILD_URL"));
+  ##build_url=urlencode(env.get("CI_BUILD_URL"));
   commit=env.get("CI_COMMIT_ID")
 
 elif "CF_BUILD_URL" in env and "CF_BUILD_ID" in env:
@@ -145,7 +154,7 @@ elif "CF_BUILD_URL" in env and "CF_BUILD_ID" in env:
   service="codefresh"
   branch=env.get("CF_BRANCH")
   build=env.get("CF_BUILD_ID")
-  build_url=urlencode(env.get("CF_BUILD_URL"))
+  #build_url=urlencode(env.get("CF_BUILD_URL"))
   commit=env.get("CF_REVISION")
 
 elif "TEAMCITY_VERSION" in env:
@@ -164,7 +173,7 @@ elif "TEAMCITY_VERSION" in env:
   service="teamcity"
   branch=env.get("TEAMCITY_BUILD_BRANCH")
   build=env.get("TEAMCITY_BUILD_ID")
-  build_url=urlencode(env.get("TEAMCITY_BUILD_URL"))
+  #build_url=urlencode(env.get("TEAMCITY_BUILD_URL"))
   if "TEAMCITY_BUILD_COMMIT" in env:
     commit=env.get("TEAMCITY_BUILD_COMMIT")
   else:
@@ -189,7 +198,7 @@ elif "BUDDYBUILD_BRANCH" in env:
   service = "buddybuild"
   branch = env.get("BUDDYBUILD_BRANCH")
   build = env.get("BUDDYBUILD_BUILD_NUMBER")
-  build_url = "https://dashboard.buddybuild.com/public/apps/$BUDDYBUILD_APP_ID/build/$BUDDYBUILD_BUILD_ID"
+  #build_url = "https://dashboard.buddybuild.com/public/apps/$BUDDYBUILD_APP_ID/build/$BUDDYBUILD_BUILD_ID"
 
 elif env.get("CI") == "true" and env.get("BITRISE_IO") == "true":
   # http://devcenter.bitrise.io/faq/available-environment-variables/
@@ -197,7 +206,7 @@ elif env.get("CI") == "true" and env.get("BITRISE_IO") == "true":
   service = "bitrise"
   branch = env.get("BITRISE_GIT_BRANCH")
   build  = env.get("BITRISE_BUILD_NUMBER")
-  build_url =urlencode(env.get("BITRISE_BUILD_URL"))
+  #build_url =urlencode(env.get("BITRISE_BUILD_URL"))
   pr = env.get("BITRISE_PULL_REQUEST")
   if "GIT_CLONE_COMMIT_HASH" in env:
     commit = env.get("GIT_CLONE_COMMIT_HASH")
@@ -220,7 +229,7 @@ elif env.get("CI") == "true" and env.get("BUILDKITE"):
   branch = env.get("BUILDKITE_BRANCH")
   build  = env.get("BUILDKITE_BUILD_NUMBER")
   build_id = env.get("BUILDKITE_JOB_ID")
-  build_url = urlencode(env.get("BUILDKITE_BUILD_URL"))
+  #build_url = urlencode(env.get("BUILDKITE_BUILD_URL"))
   slug = env.get("BUILDKITE_PROJECT_SLUG")
   commit = env.get("BUILDKITE_COMMIT")
   if env.get("BUILDKITE_PULL_REQUEST") != "false":
@@ -235,7 +244,7 @@ elif env.get("CI") == "drone" or env.get("DRONE") == "true":
   service = "drone.io"
   branch = env.get("DRONE_BRANCH")
   build_id  = env.get("DRONE_BUILD_NUMBER")
-  build_url =urlencode(env.get("DRONE_BUILD_LINK"))
+  #build_url =urlencode(env.get("DRONE_BUILD_LINK"))
   pr  = env.get("DRONE_PULL_REQUEST")
   job = env.get("DRONE_JOB_NUMBER")
   tag = env.get("DRONE_TAG")
@@ -283,7 +292,7 @@ elif env.get("SHIPPABLE") == "true":
   # http://docs.shippable.com/ci_configure/
   service = "shippable"
   build = env.get("BUILD_NUMBER")
-  build_url =urlencode(env.get("BUILD_URL"))
+  #build_url =urlencode(env.get("BUILD_URL"))
   pr = env.get("PULL_REQUEST")
   slug = env.get("REPO_FULL_NAME")
   commit = env.get("COMMIT")
@@ -303,7 +312,7 @@ elif env.get("GREENHOUSE") == "true":
   service = "greenhouse"
   branch = "$GREENHOUSE_BRANCH"
   build = "$GREENHOUSE_BUILD_NUMBER"
-  build_url =urlencode(env.get("GREENHOUSE_BUILD_URL"))
+  #build_url =urlencode(env.get("GREENHOUSE_BUILD_URL"))
   pr = "$GREENHOUSE_PULL_REQUEST"
   commit = "$GREENHOUSE_COMMIT"
   search_in = search_in + " " + env.get("GREENHOUSE_EXPORT_DIR")
@@ -788,7 +797,10 @@ if content_type: request.add_header("Content-Type", content_type)
 try:
   response = urlopen(request).read().decode()
   print(bcolors.OKGREEN + "Published: '{0}".format(response) + bcolors.ENDC)
-  print(response)
+  res = json.loads(response)
+  ch_id = str(res["id"])
+  print ('Uploaded check_run https://github.com/{}/{}/runs/{}'.format(owner, repo, ch_id))
+  open(args.id_file, 'w').write(response)
   exit(0)
 
 except Exception as e:

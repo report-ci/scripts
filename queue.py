@@ -8,6 +8,7 @@ import subprocess
 import re
 import fnmatch
 import urllib
+import json
 
 if sys.version_info >= (3, 0):
   import urllib
@@ -40,8 +41,12 @@ parser.add_argument("-r", "--root_dir", help="The root directory of the git-proj
 parser.add_argument("-s", "--sha", help="Specify the commit sha - normally determined by invoking git")
 parser.add_argument("-u", "--slug", help="Slug of the reporistory, e.g. report-ci/scripts")
 parser.add_argument("-x", "--text", help="Text for the placeholder")
+parser.add_argument("-f", "--id_file" , help="The file to hold the check id given by github.", default=".report-ci-id.json")
 
 args = parser.parse_args()
+
+if "REPORT_CI_TOKEN" in env and not args.token:
+  args.token = env["REPORT_CI_TOKEN"]
 
 commit = None
 if args.sha:
@@ -110,14 +115,17 @@ uc =  bytes(upload_content, "utf8") if sys.version_info >= (3, 0) else upload_co
 request = Request(url + "?" + urlencode(query), uc)
 request.add_header("Authorization",  "Bearer " + args.token)
 request.add_header("Content-Type",  "text/plain")
-request.get_method = lambda: 'POST';
+request.get_method = lambda: 'POST'
 
 try:
   response = urlopen(request).read().decode()
-  print ('    {0} '.format(response));
+  res = json.loads(response)
+  ch_id = str(res["id"])
+  print ('Queued check_run https://github.com/{}/{}/runs/{}'.format(owner, repo, ch_id))
+  open(args.id_file, 'w').write(response)
   exit(0)
 except Exception  as e:
-  sys.stderr.write("Exception: " + str(e));
-  print(bcolors.FAIL + 'Queueing failed: {0}'.format(e) + bcolors.ENDC);
+  sys.stderr.write("Exception: " + str(e))
+  print(bcolors.FAIL + 'Queueing failed: {0}'.format(e) + bcolors.ENDC)
   print(e.read())
   exit(1)

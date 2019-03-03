@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import json
 import os
 import sys
 import argparse
@@ -40,8 +40,18 @@ parser.add_argument("-s", "--sha", help="Specify the commit sha - normally deter
 parser.add_argument("-u", "--slug", help="Slug of the reporistory, e.g. report-ci/scripts")
 parser.add_argument("-c", "--check_run", help="The check-run id used by github, used to update reports.")
 parser.add_argument("-x", "--text", help="Text for the placeholder")
+parser.add_argument("-f", "--id_file" , help="The file to hold the check id given by github.", default=".report-ci-id.json")
 
 args = parser.parse_args()
+
+if "REPORT_CI_TOKEN" in env and not args.token:
+  args.token = env["REPORT_CI_TOKEN"]
+
+if not args.check_run:
+  try:
+    args.check_run = json.loads(open(args.id_file, "r").read())["id"]
+  except:
+    pass
 
 commit = None
 if args.sha:
@@ -116,7 +126,10 @@ if args.check_run:
 
 try:
   response = urlopen(request).read().decode()
-  print(response)
+  res = json.loads(response)
+  ch_id = str(res["id"])
+  print ('Started check_run https://github.com/{}/{}/runs/{}'.format(owner, repo, ch_id))
+  open(args.id_file, 'w').write(response)
   exit(0)
 except Exception  as e:
   print(bcolors.FAIL + 'Starting failed: {0}'.format(e) + bcolors.ENDC);
