@@ -813,14 +813,15 @@ if service and service in ["travis-ci" , "appveyor" , "circle-ci"] and args.toke
 if sys.version_info >= (3, 0):
   upload_content=  bytes(upload_content, "utf8")
 
+if args.check_run and not args.name and 'run-name' in query:
+  del query['run-name']
+
 request = Request(url + "?" + urlencode(query), upload_content , headers)
 if args.token:   request.add_header("Authorization",  "Bearer " + args.token)
 if content_type: request.add_header("Content-Type", content_type)
+
 if args.check_run:
   request.get_method = lambda: 'PATCH'
-  if not args.name and 'run-name' in query:
-    del query['run-name']
-
 
 try:
   response = urlopen(request).read().decode()
