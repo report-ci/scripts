@@ -67,6 +67,7 @@ if not args.check_run:
 
 ## Alright, now detect the CI - thanks to codecov for the content
 
+root_dir = None
 branch  = None
 service = None
 pr      = None
