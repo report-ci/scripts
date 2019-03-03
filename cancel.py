@@ -33,7 +33,7 @@ class bcolors:
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("-t", "--token", help="Token to authenticate (not needed for public projects on appveyor, travis and circle-ci", required=True)
+parser.add_argument("-t", "--token", help="Token to authenticate (not needed for public projects on appveyor, travis and circle-ci")
 parser.add_argument("-n", "--name", help="Custom name for the text run")
 parser.add_argument("-i", "--title", help="Custom output title")
 parser.add_argument("-r", "--root_dir", help="The root directory of the git-project, to be used for aligning paths properly. Default is the git-root.")
