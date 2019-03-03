@@ -377,17 +377,18 @@ if not owner or not repo:
 print (bcolors.OKBLUE + "    Project: " + owner + '/' + repo + bcolors.ENDC)
 
 # find
-def match_file(file):
+def match_file(file_abs):
   match = False
+  file = os.path.relpath(file_abs)
   for inc in args.include:
-    if fnmatch.fnmatch(file, inc):
+    if fnmatch.fnmatch(file, inc) or fnmatch.fnmatch(file_abs, inc):
       match = True
-      break;
+      break
 
   for exc in args.exclude:
-    if fnmatch.fnmatch(file, exc):
+    if fnmatch.fnmatch(file, exc) or fnmatch.fnmatch(file_abs, exc):
       match = False
-      break;
+      break
 
   return match
 
@@ -425,7 +426,7 @@ if not args.file_list:
       abs_file = os.path.join(path, file)
       file_list.append(abs_file)
 else:
-  for file in file_list:
+  for file in args.file_list:
     abs = os.path.abspath(file)
     if not os.path.isfile(abs):
       print(bcolors.FAIL + "Could not find file '" + file + "'" + bcolors.ENDC)
