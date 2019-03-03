@@ -121,8 +121,8 @@ request.add_header("Content-Type",  "text/plain")
 
 try:
   response = urlopen(request).read().decode()
-  json.loads(response)
-  env[args.var_name] = response["id"]
+  res = json.loads(response)
+  env[args.var_name] = res["id"]
   print(response)
   exit(0)
 except Exception  as e:
