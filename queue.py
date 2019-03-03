@@ -120,7 +120,7 @@ request.get_method = lambda: 'POST'
 try:
   response = urlopen(request).read().decode()
   res = json.loads(response)
-  env[args.var_name] = res["id"]
+  env[args.var_name] = str(res["id"])
   print ('    {0} '.format(response))
   exit(0)
 except Exception  as e:
