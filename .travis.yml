@@ -5,25 +5,15 @@ env:
 addons:
   apt:
     packages:
-    - jq
     - git
 language: python
 os:
 - linux
 script:
-- python ./queue.py --token $REPORT_CI_TOKEN --name "Only queued"  --title "Queue test" > /dev/null
-- python ./queue.py --token $REPORT_CI_TOKEN --name "Queue -> InProgress"  --title "Progress test" | grep -E '^\s*\{\s*"id"\s*:\s*([0-9]+)\s*\}\s*$' > job1.json
-- JOB1=$(jq '.id' < job1.json)
-- echo "JOB1  https://github.com/report-ci/scripts/runs/$JOB1"
-- python ./queue.py --token $REPORT_CI_TOKEN -x ./README.md --name "Queue -> Cancelled"  --title "Cancel test" | grep -E '^\s*\{\s*"id"\s*:\s*([0-9]+)\s*\}\s*$' > job2.json
-- JOB2=$(jq '.id' < job2.json)
-- echo "JOB2  https://github.com/report-ci/scripts/runs/$JOB2"
-- python ./start.py --token $REPORT_CI_TOKEN --check_run $JOB1
-- echo "Started JOB1"
-- python ./start.py --token $REPORT_CI_TOKEN --name "Start -> Cancelled"  --title "Cancel test 2"| grep -E '^\s*\{\s*"id"\s*:\s*([0-9]+)\s*\}\s*$' > job3.json
-- JOB3=$(jq '.id' < job3.json)
-- echo "JOB3  https://github.com/report-ci/scripts/runs/$JOB3"
-- python ./cancel.py --token $REPORT_CI_TOKEN --check_run $JOB2
-- echo "Cancelled JOB2"
-- python ./cancel.py --token $REPORT_CI_TOKEN --check_run $JOB3
-- echo "Cancelled JOB3"
+- python ./queue.py --token $REPORT_CI_TOKEN --name "Only queued"  --title "Queue test"
+- python ./queue.py --token $REPORT_CI_TOKEN --name "Queue -> InProgress"  --title "Progress test" --id_file .job1.json
+- python ./queue.py --token $REPORT_CI_TOKEN -x ./README.md --name "Queue -> Cancelled"  --title "Cancel test" --id_file .job2.json
+- python ./start.py --token $REPORT_CI_TOKEN --id_file .job1.json
+- python ./start.py --token $REPORT_CI_TOKEN --name "Start -> Cancelled"  --title "Cancel test 2" --id_file .job3.json
+- python ./cancel.py --token $REPORT_CI_TOKEN --id_file .job2.json
+- python ./cancel.py --token $REPORT_CI_TOKEN --id_file .job3.json
