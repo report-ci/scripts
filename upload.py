@@ -817,7 +817,9 @@ request = Request(url + "?" + urlencode(query), upload_content , headers)
 if args.token:   request.add_header("Authorization",  "Bearer " + args.token)
 if content_type: request.add_header("Content-Type", content_type)
 if args.check_run:
-  request.get_method = lambda: 'PATCH';
+  request.get_method = lambda: 'PATCH'
+  if not args.name:
+    del query["name"]
 
 
 try:
