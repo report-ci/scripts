@@ -10,17 +10,10 @@ language: python
 os:
 - linux
 script:
-- python ./queue.py --token $REPORT_CI_TOKEN --name "Only queued"  --title "Queue test" --var_name=ONLY_QUEUED
-- echo "Only queued https://github.com/report-ci/scripts/runs/$ONLY_QUEUED"
-- python ./queue.py --token $REPORT_CI_TOKEN --name "Queue -> InProgress"  --title "Progress test" --var_name=JOB1
-- echo "JOB1  https://github.com/report-ci/scripts/runs/$JOB1"
-- python ./queue.py --token $REPORT_CI_TOKEN -x ./README.md --name "Queue -> Cancelled"  --title "Cancel test" --var_name=JOB2
-- echo "JOB2  https://github.com/report-ci/scripts/runs/$JOB2"
-- python ./start.py --token $REPORT_CI_TOKEN --check_run $JOB1
-- echo "Started JOB1"
-- python ./start.py --token $REPORT_CI_TOKEN --name "Start -> Cancelled"  --title "Cancel test 2" --var_name=JOB3
-- echo "JOB3  https://github.com/report-ci/scripts/runs/$JOB3"
-- python ./cancel.py --token $REPORT_CI_TOKEN --check_run $JOB2
-- echo "Cancelled JOB2"
-- python ./cancel.py --token $REPORT_CI_TOKEN --var_name=JOB3
-- echo "Cancelled JOB3"
+- python ./queue.py --token $REPORT_CI_TOKEN --name "Only queued"  --title "Queue test"
+- python ./queue.py --token $REPORT_CI_TOKEN --name "Queue -> InProgress"  --title "Progress test" --id_file=.job1.json
+- python ./queue.py --token $REPORT_CI_TOKEN -x ./README.md --name "Queue -> Cancelled"  --title "Cancel test" --id_file=.job2.json
+- python ./start.py --token $REPORT_CI_TOKEN --id_file=.job1.json
+- python ./start.py --token $REPORT_CI_TOKEN --name "Start -> Cancelled"  --title "Cancel test 2" --id_file=.job3.json
+- python ./cancel.py --token $REPORT_CI_TOKEN --id_file=.job2.json
+- python ./cancel.py --token $REPORT_CI_TOKEN --id_file=.job3.json

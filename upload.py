@@ -53,14 +53,18 @@ parser.add_argument("-s", "--ci_system", help="Set the CI System manually. Shoul
 parser.add_argument("-b", "--build_id", help="The identifer The Identifer for the build. When used on a CI system this will be automatically generated.")
 parser.add_argument("-a", "--sha", help="Specify the commit sha - normally determined by invoking git")
 parser.add_argument("-c", "--check_run", help="The check-run id used by github, used to update reports.")
+parser.add_argument("-f", "--id_file" , help="The file to hold the check id given by github.", default=".report-ci-id.json")
 
 args = parser.parse_args()
 
 if "REPORT_CI_TOKEN" in env and not args.token:
   args.token = env["REPORT_CI_TOKEN"]
 
-if "REPORT_CI_CHECK_RUN_ID" in env and not args.check_run:
-  args.check_run = env["REPORT_CI_CHECK_RUN_ID"]
+if not args.check_run:
+  try:
+    args.check_run = json.load(args.id_file)["id"]
+  except:
+    pass
 
 ## Alright, now detect the CI - thanks to codecov for the content
 
@@ -789,7 +793,10 @@ if content_type: request.add_header("Content-Type", content_type)
 try:
   response = urlopen(request).read().decode()
   print(bcolors.OKGREEN + "Published: '{0}".format(response) + bcolors.ENDC)
-  print(response)
+  res = json.loads(response)
+  ch_id = str(res["id"])
+  print ('Uploaded check_run https://github.com/{}/{}/runs/{}'.format(owner, repo, ch_id))
+  open(args.id_file, 'w').write(res)
   exit(0)
 
 except Exception as e:

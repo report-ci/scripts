@@ -41,7 +41,7 @@ parser.add_argument("-r", "--root_dir", help="The root directory of the git-proj
 parser.add_argument("-s", "--sha", help="Specify the commit sha - normally determined by invoking git")
 parser.add_argument("-u", "--slug", help="Slug of the reporistory, e.g. report-ci/scripts")
 parser.add_argument("-x", "--text", help="Text for the placeholder")
-parser.add_argument("-d", "--var_name" , help="The name of the environment variable to hold the job_id", default="REPORT_CI_CHECK_RUN_ID")
+parser.add_argument("-f", "--id_file" , help="The file to hold the check id given by github.", default=".report-ci-id.json")
 
 args = parser.parse_args()
 
@@ -120,8 +120,9 @@ request.get_method = lambda: 'POST'
 try:
   response = urlopen(request).read().decode()
   res = json.loads(response)
-  env[args.var_name] = str(res["id"])
-  print ('    {0} '.format(response))
+  ch_id = str(res["id"])
+  print ('Queued check_run https://github.com/{}/{}/runs/{}'.format(owner, repo, ch_id))
+  open(args.id_file, 'w').write(res);
   exit(0)
 except Exception  as e:
   sys.stderr.write("Exception: " + str(e))
