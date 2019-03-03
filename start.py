@@ -40,7 +40,7 @@ parser.add_argument("-s", "--sha", help="Specify the commit sha - normally deter
 parser.add_argument("-u", "--slug", help="Slug of the reporistory, e.g. report-ci/scripts")
 parser.add_argument("-c", "--check_run", help="The check-run id used by github, used to update reports.")
 parser.add_argument("-x", "--text", help="Text for the placeholder")
-parser.add_argument("-f", "--id_file" , help="The file to hold the check id given by github.", default=".report-ci-id.json")
+parser.add_argument("-d", "--id_file" , help="The file to hold the check id given by github.", default=".report-ci-id.json")
 
 args = parser.parse_args()
 

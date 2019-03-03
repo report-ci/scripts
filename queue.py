@@ -41,7 +41,7 @@ parser.add_argument("-r", "--root_dir", help="The root directory of the git-proj
 parser.add_argument("-s", "--sha", help="Specify the commit sha - normally determined by invoking git")
 parser.add_argument("-u", "--slug", help="Slug of the reporistory, e.g. report-ci/scripts")
 parser.add_argument("-x", "--text", help="Text for the placeholder")
-parser.add_argument("-f", "--id_file" , help="The file to hold the check id given by github.", default=".report-ci-id.json")
+parser.add_argument("-d", "--id_file" , help="The file to hold the check id given by github.", default=".report-ci-id.json")
 
 args = parser.parse_args()
 
