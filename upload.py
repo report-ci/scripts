@@ -456,44 +456,59 @@ for abs_file in file_list:
 
     if ext == ".xml":
       if re.match(r"(<\?[^?]*\?>\s*)?<(?:TestResult|TestLog)>\s*<TestSuite", content):
+        print("    Found " + abs_file + " looks like boost.test")
         boost_test.append(content)
         continue
 
       if re.match(r"(<\?[^?]*\?>\s*)?<TestCase", content) and (content.find("<QtVersion>") != -1 or content.find("<qtversion>") != -1):
+        print("    Found " + abs_file + ", looks like qtest")
         qtest.append(content)
+        continue
+
+      if re.match(r'(<\?[^?]*\?>\s*)?<!-- Tests compiled with Criterion v[0-9.]+ -->\s*<testsuites name="Criterion Tests"', content):
+        print("    Found " + abs_file + ", looks like criterion")
+        criterion_test.append(content)
         continue
 
       if re.match(r"(<\?[^?]*\?>\s*)?(<testsuites>\s*)?<testsuite[^>]", content): #xUnit thingy
         if content.find('"java.version"') != -1 and (content.find('org.junit') != -1 or content.find('org/junit') != -1 or content.find('org\\junit') != -1):
+          print("    Found " + abs_file + ", looks like JUnit")
           junit_test.append(content)
-        elif content.find('"java.version"') != -1 and (content.find('org.testng') != -1 or content.find('org/testng') != -1 or content.find('org\\testng') != -1):
+        elif content.find('"java.version"') != -1 and (content.find('org.testng') != -1 or content.find('org/testng') != -1 or content.find('org\    estng') != -1):
+          print("    Found " + abs_file + ", looks like TestNG")
           testng_test.append(content)
         elif content.find('"java.version"') == -1 and content.find('<testsuite name="bandit" tests="') != -1:
+          print("    Found " + abs_file + ", looks like Bandit")
           bandit.append(content)
         elif content.find('.php') != -1:
+          print("    Found " + abs_file + ", looks like PHPUnit")
           phpunit += 1
           xunit_test.append(content)
         elif content.find('.py') != -1:
+          print("    Found " + abs_file + ", looks like PyTest")
           pytest += 1
           xunit_test.append(content)
         else:
+          print("    Found " + abs_file + ", looks like some xUnit")
           xunit_test.append(content)
         continue
 
-      if re.match(r'(<\?[^?]*\?>\s*)?<!-- Tests compiled with Criterion v[0-9.]+ -->\s*<testsuites name="Criterion Tests"', content):
-        criterion_test.append(content)
-        continue
+
       if re.match(r'(<\?[^?]*\?>\s*)?<Catch\s+name=', content):
+        print("    Found " + abs_file + ", looks like catch")
         catch_test.append(content)
         continue
       if re.match(r'(<\?[^?]*\?>\s*)?<stream>\s*<ready-test-suite>', content):
+        print("    Found " + abs_file + ", looks like TestUnit")
         testunit.append(content)
         continue
       if re.match(r'(<\?[^?]*\?>\s*)?(<!--This file represents the results of running a test suite-->)?<test-results\s+name', content) or \
          re.match(r'(<\?[^?]*\?>\s*)?<test-run id="2"', content):
+        print("    Found " + abs_file + ", looks like NUnit")
         nunit.append(content)
         continue
       if re.match(r'(<\?[^?]*\?>)?\s*<assemblies', content):
+        print("    Found " + abs_file + ", looks like xUnit.net")
         xunitnet.append(content)
         continue
 
@@ -503,6 +518,7 @@ for abs_file in file_list:
         lines = content.splitlines()
         json_lines = [json.loads(ln) for ln in lines]
         if all(val in json_lines[0] for val in ["Time","Action","Package","Test"]): #assumption
+          print("Found " + abs_file + ", looks like GoTest")
           go_test = go_test + [json.loads(ln) for ln in lines]
           continue
       except:
@@ -511,9 +527,11 @@ for abs_file in file_list:
         data = json.loads(content)
 
         if "version" in data and "examples" in data and "summary" in data and "summary_line" in data :
+          print("Found " + abs_file + ", looks like RSpec")
           rspec.append(data)
           continue
         if "stats" in data and "tests" in data and "pending" in data and "passes" in data and "failures" in data:
+          print("Found " + abs_file + ", looks like Mocha")
           mocha.append(data)
           continue
 
@@ -522,11 +540,15 @@ for abs_file in file_list:
 
       #data = loadJson(content)
     elif ext == ".trx" and re.match(r"(<\?[^?]*\?>\s*)?<TestRun", content):
+      print("Found " + abs_file + ", looks like MsTest")
       mstest.append((abs_file, content))
 
     elif ext == ".tap" and re.match(r"TAP version \d+", content): # is Test anything protocol
       if re.match(r"ava[\\\/]cli.js", content):
+        print("Found " + abs_file + ", looks like AVA")
         ava += 1
+      else:
+        print("Found " + abs_file + ", looks like TAP")
       tap_test.append(content)
 
 
