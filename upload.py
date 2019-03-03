@@ -70,6 +70,7 @@ slug = None
 run_name = args.name
 build_id = None
 account_name = None
+root_dir = None
 
 if "JENKINS_URL" in env:
   print (bcolors.HEADER + "    Jenkins CI detected." + bcolors.ENDC)
@@ -93,6 +94,9 @@ if "JENKINS_URL" in env:
     pr = env.get("ghprbPullId")
   elif "CHANGE_ID"  in env:
     pr = env.get("CHANGE_ID")
+
+  if "WORKSPACE" in env:
+    root_dir = env["WORKSPACE"]
 
   build=env.get("BUILD_NUMBER")
   build_url=urlencode(env.get("BUILD_URL"))
