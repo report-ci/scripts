@@ -17,3 +17,7 @@ script:
 - python ./start.py --token $REPORT_CI_TOKEN --name "Start -> Cancelled"  --title "Cancel test 2" --id_file=.job3.json
 - python ./cancel.py --token $REPORT_CI_TOKEN --id_file=.job2.json
 - python ./cancel.py --token $REPORT_CI_TOKEN --id_file=.job3.json
+- cat .job1.json
+- cat .job2.json
+- cat .job3.json
+- cat .report-ci-id.json
