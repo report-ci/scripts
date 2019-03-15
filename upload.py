@@ -53,6 +53,8 @@ parser.add_argument("-b", "--build_id", help="The identifer The Identifer for th
 parser.add_argument("-a", "--sha", help="Specify the commit sha - normally determined by invoking git")
 parser.add_argument("-c", "--check_run", help="The check-run id used by github, used to update reports.")
 parser.add_argument("-d", "--id_file" , help="The file to hold the check id given by github.", default=".report-ci-id.json")
+parser.add_argument("-D", "--define", help="Define a preprocessor token for the name lookup.", nargs='+')
+parser.add_argument("-p", "--preset", help="Select a definition & include preset from .report-ci.yaml.")
 
 args = parser.parse_args()
 
@@ -797,6 +799,8 @@ query = {
 
 if run_name: query['run-name'] = run_name
 if args.check_run: query['check-run-id'] = args.check_run
+if args.define_preset: query['preset'] = args.preset
+if args.define: query['define'] = args.define
 
 
 url = "https://api.report.ci/publish/"
