@@ -799,7 +799,7 @@ query = {
 
 if run_name: query['run-name'] = run_name
 if args.check_run: query['check-run-id'] = args.check_run
-if args.define_preset: query['preset'] = args.preset
+if args.preset: query['preset'] = args.preset
 if args.define: query['define'] = args.define
 
 
