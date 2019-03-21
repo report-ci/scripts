@@ -51,6 +51,7 @@ parser.add_argument("-l", "--log_title", help="The title of the logfile, used wh
 parser.add_argument("-v", "--level", help="Level of information to be used.", default="warning", choices=["note", "error", "warning"])
 parser.add_arugment("-i", "--input", help="Input file to load.")
 parser.add_argument("-e", "--tee", help="Read from stdin and forward it to the given faile.")
+parser.add_argument("-u", "--result", help="Force a result. Report.ci will deduce it if not provided.",choices=["success", "fail", "neutral"])
 
 args = parser.parse_args()
 
@@ -434,6 +435,7 @@ query = {
 if run_name: query['run-name'] = run_name
 if args.check_run: query['check-run-id'] = args.check_run
 if args.log_name: query['log-name'] = args.log_name
+if args.result: query["result"] = args.result
 
 
 url = "https://api.report.ci/annotate/"
