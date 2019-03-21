@@ -99,7 +99,7 @@ if args.title:
     query['title'] = args.title
 
 
-url = "https://api.report.ci/publish/queue"
+url = "https://api.report.ci/queue"
 
 if sys.version_info >= (3, 0):
   url = urllib.request.urlopen(url).geturl()

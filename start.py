@@ -104,7 +104,7 @@ if args.name:
 if args.title:
     query['title'] = args.title
 
-url = "https://api.report.ci/publish/start"
+url = "https://api.report.ci/start"
 if sys.version_info >= (3, 0):
   url = urllib.request.urlopen(url).geturl()
 else:

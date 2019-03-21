@@ -105,7 +105,7 @@ if args.name:
 if args.title:
     query['title'] = args.title
 
-url = "https://api.report.ci/publish/cancel"
+url = "https://api.report.ci/cancel"
 if sys.version_info >= (3, 0):
   url = urllib.request.urlopen(url).geturl()
 else:
