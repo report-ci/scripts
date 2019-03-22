@@ -51,6 +51,7 @@ if not args.check_run:
   try:
     args.check_run = json.loads(open(args.id_file, "r").read())["id"]
   except:
+    print ("Starting check_run {}".format(args.check_run))
     pass
 
 commit = None

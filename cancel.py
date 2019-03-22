@@ -52,7 +52,11 @@ if not args.check_run:
   try:
     args.check_run = json.loads(open(args.id_file, "r").read())["id"]
   except:
-    pass
+    print(bcolors.FAIL + " cannot determine check_run id, exiting")
+    sys.exit(1)
+
+print ("Cancelling check_run {}".format(args.check_run))
+
 
 commit = None
 if args.sha:
@@ -106,6 +110,7 @@ if args.title:
     query['title'] = args.title
 
 url = "https://api.report.ci/cancel"
+
 if sys.version_info >= (3, 0):
   url = urllib.request.urlopen(url).geturl()
 else:
