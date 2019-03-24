@@ -55,11 +55,11 @@ parser.add_argument("-u", "--result", help="Force a result. Report.ci will deduc
 
 args = parser.parse_args()
 
-if args.input is None and args.tee:
+if args.input is None and args.tee is False:
   print('Either "input" or "tee" have to be provided as arguments.')
   sys.exit(1)
 
-if not args.input is None and not args.tee:
+if not args.input is None and args.tee is True:
   print('Only one of "input" or "tee" can be provide.')
 
 upload_content = None
