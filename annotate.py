@@ -50,7 +50,7 @@ parser.add_argument("-d", "--id_file" , help="The file to hold the check id give
 parser.add_argument("-l", "--log_title", help="The title of the logfile, used when appending severa log file")
 parser.add_argument("-v", "--level", help="Level of information to be used.", default="warning", choices=["note", "error", "warning"])
 parser.add_argument("-i", "--input", help="Input file to load.")
-parser.add_argument("-e", "--tee", help="Read from stdin and forward it to the given failed.")
+parser.add_argument("-e", "--tee", help="Read from stdin and forward it to the given failed.", action='store_true', default=False)
 parser.add_argument("-u", "--result", help="Force a result. Report.ci will deduce it if not provided.",choices=["success", "fail", "neutral"])
 
 args = parser.parse_args()
@@ -66,6 +66,7 @@ upload_content = None
 if args.input:
   upload_content = open(args.input).read()
 elif args.tee:
+  upload_content = ''
   line = sys.stdin.readline()
   while line:
     sys.stdout.write(line)
@@ -434,7 +435,7 @@ query = {
 
 if run_name: query['run-name'] = run_name
 if args.check_run: query['check-run-id'] = args.check_run
-if args.log_name: query['log-name'] = args.log_name
+if args.input:  query['log-name'] = args.input
 if args.result: query["result"] = args.result
 
 
