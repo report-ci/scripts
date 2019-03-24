@@ -57,15 +57,15 @@ args = parser.parse_args()
 
 if args.input is None and args.tee is False:
   print('Either "input" or "tee" have to be provided as arguments.')
-  sys.exit(2)
+  sys.exit(1)
 
 if not args.input is None and args.tee is True:
   print('Only one of "input" or "tee" can be provide.')
-  sys.exit(3)
 
 upload_content = None
 if args.input:
   upload_content = open(args.input).read()
+
 elif args.tee:
   upload_content = ''
   line = sys.stdin.readline()
@@ -78,7 +78,6 @@ elif args.tee:
 
 if "REPORT_CI_TOKEN" in env and not args.token:
   args.token = env["REPORT_CI_TOKEN"]
-  sys.exit(4)
 
 if not args.check_run:
   try:
@@ -473,5 +472,5 @@ except Exception as e:
   try:
     print(e.read())
   except:
-    exit(6)
-  exit(7)
+    exit(1)
+  exit(1)
