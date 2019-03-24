@@ -61,7 +61,6 @@ if args.input is None and args.tee is None:
 
 if not args.input is None and not args.tee is None:
   print('Only one of "input" or "tee" can be provide.')
-
 upload_content = None
 if args.input:
   upload_content = open(args.input).read()
@@ -71,6 +70,7 @@ elif args.tee:
   while line:
     sys.stdout.write(line)
     upload_content += line
+    print("UL: '" + upload_content + "'")
     line = sys.stdin.readline()
 
 
@@ -410,12 +410,6 @@ def match_file(file_abs):
       break
 
   return match
-
-
-upload_content = upload_content.strip()
-if len(upload_content) == 0:
-  print(bcolors.FAIL + " No test data to upload.")
-  exit(1)
 
 if service and not args.name and run_name:
   run_name += " [" + service + "]"
