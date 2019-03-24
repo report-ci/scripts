@@ -20,3 +20,4 @@ script:
 - python ./queue.py --name "Queue -> Completed" --title "QC Test"
 - python ./upload.py -f cmocka
 - ./test_annotate.sh
+- python ./annotate.py --input annotate.log --tool gcc
