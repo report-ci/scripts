@@ -65,7 +65,6 @@ if not args.input is None and args.tee is True:
 upload_content = None
 if args.input:
   upload_content = open(args.input).read()
-
 elif args.tee:
   upload_content = ''
   line = sys.stdin.readline()
