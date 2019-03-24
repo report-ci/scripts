@@ -19,3 +19,5 @@ script:
 - python ./cancel.py --id_file .job3.json
 - python ./queue.py --name "Queue -> Completed" --title "QC Test"
 - python ./upload.py -f cmocka
+- sed -i 's/parser\\.add_argument/parser.function_does_not_exit/g'
+- python ./upload.py -f cmocka | python annotate.py --tee --tool python
