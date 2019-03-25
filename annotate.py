@@ -74,9 +74,9 @@ elif args.tee:
     line = sys.stdin.readline()
 
 
+
 if "REPORT_CI_TOKEN" in env and not args.token:
   args.token = env["REPORT_CI_TOKEN"]
-  sys.exit(1)
 
 if not args.check_run:
   try:
@@ -460,14 +460,14 @@ if args.check_run:
 
 try:
   response = urlopen(request).read().decode()
-  print(bcolors.OKGREEN + "Published: '{0}".format(response) + bcolors.ENDC)
+  print(bcolors.OKGREEN + "Annotating: '{0}".format(response) + bcolors.ENDC)
   res = json.loads(response)
   ch_id = str(res["id"])
   print ('Uploaded log-file https://github.com/{}/{}/runs/{}'.format(owner, repo, ch_id))
   open(args.id_file, 'w').write(response)
   exit(0)
 except Exception as e:
-  print(bcolors.FAIL + 'Publishing failed: {0}'.format(e) + bcolors.ENDC)
+  print(bcolors.FAIL + 'Annotating failed: {0}'.format(e) + bcolors.ENDC)
   try:
     print(e.read())
   except:

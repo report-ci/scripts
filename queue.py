@@ -54,7 +54,6 @@ if args.sha:
 if not commit:
   commit = subprocess.check_output(["git" ,"rev-parse", "HEAD"]).decode().strip()
 
-print('{')
 print(bcolors.OKBLUE + '    CommitHash: ' + commit + '' + bcolors.ENDC)
 
 root_dir = args.root_dir
