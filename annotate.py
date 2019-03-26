@@ -430,6 +430,7 @@ query = {
 if run_name: query['run-name'] = run_name
 if args.check_run: query['check-run-id'] = args.check_run
 if args.input:  query['log-name'] = args.input
+if args.log_title: query['log-name'] = args.log_title
 if args.result: query["result"] = args.result
 
 
