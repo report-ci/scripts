@@ -1,24 +1,29 @@
-# Uploading to report.ci
+# Endpoints
+
+## Publishing endpoint report.ci
 
 The REST Api of report.ci is as simple as can be, it consists of one endpoint:
 
-`api.report.ci/publish`
+`https://report.ci/publish`
 
-## `GET` 
+### `GET` 
 
 Yields the plan & installation ID if a token is provided
 
-## `POST`
+### `POST`
 
-Upload the actual data. There is no `PATCH` because the Github Check API overwrites check runs if they have the same name. 
-Thus reuploading a second check run to github will update the new run, while keeping the date for the old one alive.
+Upload the actual data.  Thus reuploading a second check run to github will update the new run, while keeping the date for the old one alive.
 
-### Authentication
+### `PATCH`
+
+Upload the a test report and overwrite an existing change. Required when used with scheduling.
+
+#### Authentication
 
 The token shall be passed as `Bearer` in the `Authorization` http header. 
 *Note that public projects work without a token on some CI systems.*
 
-### Parameters
+#### Parameters
 
 | Name | Description |
 |------|-------------|
@@ -30,3 +35,4 @@ The token shall be passed as `Bearer` in the `Authorization` http header.
 | `root-dir` | The root directory of the git-project, needed the test framework uses absolute paths |
 | `service` | If a known CI system is used, it's identifier (i.e. `appveyor`, `travis` or `circle-ci`) |
 | `branch` | If a branch is known, this allows the usage of badges | 
+| `check-run-id` | The id given by github, which is required to overwrite a check_run using the `PATH` endpoint. |
