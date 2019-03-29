@@ -117,7 +117,7 @@ elif (env.get("CI") == "true") and (env.get("TRAVIS") == "true") and (env.get("S
   print(bcolors.HEADER + "    Travis CI detected." + bcolors.ENDC)
   # https://docs.travis-ci.com/user/environment-variables/
   service="travis-ci"
-  commit = env.get("TRAVIS_PULL_REQUEST_SHA")
+  commit = env.get("TRAVIS_COMMIT")
 
   build=env.get("TRAVIS_JOB_NUMBER")
   pr=env.get("TRAVIS_PULL_REQUEST")
