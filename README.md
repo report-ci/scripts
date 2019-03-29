@@ -1,3 +1,7 @@
+# Getting started
+
+**See https://report.ci for more information and to sign up and use https://github.com/apps/report-ci to install the github app.**
+
 # Endpoints
 
 ## Publishing endpoint report.ci
