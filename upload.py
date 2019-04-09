@@ -82,6 +82,7 @@ run_name = args.name
 build_id = None
 account_name = None
 root_dir = None
+os_name = None
 
 if "JENKINS_URL" in env:
   print (bcolors.HEADER + "    Jenkins CI detected." + bcolors.ENDC)
@@ -125,6 +126,7 @@ elif (env.get("CI") == "true") and (env.get("TRAVIS") == "true") and (env.get("S
   slug=env.get("TRAVIS_REPO_SLUG")
   tag=env.get("TRAVIS_TAG")
   root_dir=env.get("TRAVIS_BUILD_DIR")
+  os_name=env.get("TRAVIS_OS_NAME")
 
   if env.get("TRAVIS_BRANCH") != env.get("TRAVIS_TAG"):
     branch=env.get("TRAVIS_BRANCH")
@@ -795,7 +797,10 @@ if len(upload_content) == 0:
   exit(1)
 
 if service and not args.name and run_name:
-  run_name += " [" + service + "]"
+  if os_name:
+    run_name += " [" + service +  ", " + os_name + "]"
+  else:
+    run_name += " [" + service + "]"
 
 headers = {}
 
