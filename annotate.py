@@ -52,6 +52,7 @@ parser.add_argument("-v", "--level", help="Level of information to be used.", de
 parser.add_argument("-i", "--input", help="Input file to load.")
 parser.add_argument("-e", "--tee", help="Read from stdin and forward it to the given failed.", action='store_true', default=False)
 parser.add_argument("-u", "--result", help="Force a result. Report.ci will deduce it if not provided.",choices=["success", "fail", "neutral"])
+parser.add_argument("-m", "--merge", help="Merge similar annotations from different check-runs.", action="store_true")
 
 args = parser.parse_args()
 
@@ -432,7 +433,7 @@ if args.check_run: query['check-run-id'] = args.check_run
 if args.input:  query['log-name'] = args.input
 if args.log_title: query['log-name'] = args.log_title
 if args.result: query["result"] = args.result
-
+if args.merge: query["merge"] = True
 
 url = "https://api.report.ci/annotate/"
 
