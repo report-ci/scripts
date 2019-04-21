@@ -55,7 +55,7 @@ parser.add_argument("-c", "--check_run", help="The check-run id used by github, 
 parser.add_argument("-d", "--id_file" , help="The file to hold the check id given by github.", default=".report-ci-id.json")
 parser.add_argument("-D", "--define", help="Define a preprocessor token for the name lookup.", nargs='+')
 parser.add_argument("-p", "--preset", help="Select a definition & include preset from .report-ci.yaml.")
-parser.add_argument("-m", "--merge", help="Merge similar annotations from different check-runs.", action="store_true")
+parser.add_argument("-m", "--merge", help="Merge similar annotations from different check-runs.")
 
 args = parser.parse_args()
 
@@ -819,7 +819,7 @@ if run_name: query['run-name'] = run_name
 if args.check_run: query['check-run-id'] = args.check_run
 if args.preset: query['preset'] = args.preset
 if args.define: query['define'] = args.define
-if args.merge: query['merge'] = True
+if args.merge: query["merge"] = args.merge
 
 
 url = "https://api.report.ci/publish/"
