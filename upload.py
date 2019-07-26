@@ -527,9 +527,10 @@ for abs_file in file_list:
       try:
         lines = content.splitlines()
         json_lines = [json.loads(ln) for ln in lines]
-        if all(val in json_lines[0] for val in ["Time","Action","Package","Test"]): #assumption
+        if any(val in json_lines[0] for val in ["Time", "Action", "Package", "Test"]): #assumption
           print("Found " + abs_file + ", looks like GoTest")
-          go_test = go_test + [json.loads(ln) for ln in lines]
+          go_test = go_test + \
+                    [json.loads(ln) for ln in lines if ln.strip().startswith('{') and ln.strip().endswith('}')]
           continue
       except:
         pass
