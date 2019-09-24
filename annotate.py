@@ -366,7 +366,7 @@ if args.root_dir:
 if args.sha:
   commit = args.sha
 if not commit:
-  commit = subprocess.check_output(["git" ,"rev-parse", "HEAD"]).decode()
+  commit = subprocess.check_output(["git" ,"rev-parse", "HEAD"]).decode().replace('\n', '')
 
 print (bcolors.OKBLUE + "    Commit hash: " + commit + bcolors.ENDC)
 
