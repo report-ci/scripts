@@ -45,7 +45,7 @@ parser.add_argument("-t", "--token", help="Token to authenticate (not needed for
 parser.add_argument("-n", "--name", help="Custom defined name of the upload when commiting several builds with the same ci system")
 parser.add_argument("-f", "--framework", choices=["boost", "junit", "testng", "xunit", "cmocka", "unity", "criterion", "bandit",
                                                   "catch", "cpputest", "cute", "cxxtest", "gtest", "qtest", "go", "testunit", "rspec", "minitest",
-                                                  "unit", "mstest", "xunitnet", "phpunit", "pytest", "pyunit", "mocha", "ava", "tap", "tape", "qunit", "doctest"],
+                                                  "unit", "mstest", "xunitnet", "phpunit", "pytest", "pyunit", "mocha", "ava", "tap", "tape", "qunit", "doctest", "nunit"],
                                         help="The used unit test framework - if not provided the script will try to determine it")
 parser.add_argument("-r", "--root_dir", help="The root directory of the git-project, to be used for aligning paths properly. Default is the git-root.")
 parser.add_argument("-s", "--ci_system", help="Set the CI System manually. Should not be needed")
