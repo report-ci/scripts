@@ -46,7 +46,7 @@ parser.add_argument("-s", "--ci_system", help="Set the CI System manually. Shoul
 parser.add_argument("-b", "--build_id", help="The identifer The Identifer for the build. When used on a CI system this will be automatically generated.")
 parser.add_argument("-a", "--sha", help="Specify the commit sha - normally determined by invoking git")
 parser.add_argument("-c", "--check_run", help="The check-run id used by github, used to update reports.")
-parser.add_argument("-d", "--id_file" , help="The file to hold the check id given by github - used for several logs.", default=".report-ci-log-id.json")
+parser.add_argument("-d", "--id_file" , help="The file to hold the check id given by github - used for several logs.", default=".report-ci-id.json")
 parser.add_argument("-l", "--log_title", help="The title of the logfile, used when appending severa log file")
 parser.add_argument("-v", "--level", help="Level of information to be used.", default="warning", choices=["note", "error", "warning"])
 parser.add_argument("-i", "--input", help="Input file to load.")

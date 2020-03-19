@@ -339,8 +339,6 @@ elif "SYSTEM_TEAMFOUNDATIONSERVERURI" in env:
    pr = env.get("PULL_REQUEST_NUMBER")
   job = env.get("BUILD_BUILDID")
   branch = env.get("BUILD_SOURCEBRANCHNAME")
-
-
 else:
     print(bcolors.HEADER + "    No CI detected." + bcolors.ENDC)
 
@@ -825,14 +823,14 @@ if args.define: query['define'] = args.define
 if args.merge: query["merge"] = args.merge
 
 
-url = "https://api.report.ci/publish/"
+url = "https://api.report.ci/report/"
 
 if sys.version_info >= (3, 0):
   url = urllib.request.urlopen(url).geturl()
 else:
   url = urllib.urlopen(url).geturl()
 
-if service and service in ["travis-ci" , "appveyor" , "circle-ci"] and args.token == None:
+if service and service in ["travis-ci", "appveyor", "circle-ci"] and args.token == None:
   query["build-id"] = build_id
   url += service + "/"
 
