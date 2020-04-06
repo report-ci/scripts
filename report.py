@@ -624,7 +624,7 @@ for abs_file in file_list:
         json_lines = [json.loads(ln) for ln in lines]
         if all(val in json_lines[0] for val in ["Time", "Action", "Package"]): #assumption
           print("Found " + abs_file + ", looks like GoTest")
-          results.append({'rawData':  [json.loads(ln) for ln in lines], 'framework': 'go-test', 'filename': abs_file})
+          results.append({'rawData':  content, 'framework': 'go-test', 'filename': abs_file})
           continue
       except:
         pass
