@@ -864,7 +864,7 @@ try:
   print(bcolors.OKGREEN + "Published: '{0}".format(response) + bcolors.ENDC)
   res = json.loads(response)
   ch_id = str(res["id"])
-  print ('Uploaded check_run https://github.com/{}/{}/runs/{}'.format(owner, repo, ch_id))
+  print ('Uploaded check_run https://report.ci/reports/gh/{}/{}/{}'.format(owner, repo, ch_id))
   open(args.id_file, 'w').write(response)
   exit(0)
 
