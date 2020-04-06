@@ -476,7 +476,7 @@ try:
   print(bcolors.OKGREEN + "Annotating: '{0}".format(response) + bcolors.ENDC)
   res = json.loads(response)
   ch_id = str(res["id"])
-  print ('Uploaded log-file https://report.ci/reports/gh/{}/{}/{}''.format(owner, repo, ch_id))
+  print ('Uploaded log-file https://report.ci/reports/gh/{}/{}/{}'.format(owner, repo, ch_id))
   open(args.id_file, 'w').write(response)
   exit(0)
 except Exception as e:
