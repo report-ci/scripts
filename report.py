@@ -715,7 +715,7 @@ if args.define: query['define'] = args.define
 if args.merge:  query["merge"] = args.merge
 if args.result: query["result"] = args.result
 
-url = "https://api.report.ci/report/"
+url = "https://us-central1-report-ci.cloudfunctions.net/report"
 
 if sys.version_info >= (3, 0):
   url = urllib.request.urlopen(url).geturl()
