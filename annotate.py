@@ -36,7 +36,6 @@ class bcolors:
 
 parser = argparse.ArgumentParser()
 
-
 parser.add_argument("-t", "--token", help="Token to authenticate (not needed for public projects on appveyor, travis and circle-ci")
 parser.add_argument("-n", "--name", help="Custom defined name of the upload when commiting several builds with the same ci system")
 parser.add_argument("-o", "--tool", choices=["gcc", "go", "java", "msvc", "net", "node", "php", "python", "ruby" ],
@@ -47,7 +46,7 @@ parser.add_argument("-b", "--build_id", help="The identifer The Identifer for th
 parser.add_argument("-a", "--sha", help="Specify the commit sha - normally determined by invoking git")
 parser.add_argument("-c", "--check_run", help="The check-run id used by github, used to update reports.")
 parser.add_argument("-d", "--id_file" , help="The file to hold the check id given by github - used for several logs.", default=".report-ci-id.json")
-parser.add_argument("-l", "--log_title", help="The title of the logfile, used when appending severa log file")
+parser.add_argument("-l", "--log_title", help="The title of the logfile, used when appending several log file")
 parser.add_argument("-v", "--level", help="Level of information to be used.", default="warning", choices=["note", "error", "warning"])
 parser.add_argument("-i", "--input", help="Input file to load.")
 parser.add_argument("-e", "--tee", help="Read from stdin and forward it to the given failed.", action='store_true', default=False)
@@ -291,6 +290,7 @@ elif env.get("CI") == "True" and env.get("APPVEYOR") == "True":
   account_name = env.get("APPVEYOR_ACCOUNT_NAME")
   root_dir = env.get("APPVEYOR_BUILD_FOLDER")
 
+
 elif env.get("CI") == "true" and "WERCKER_GIT_BRANCH" in env:
   print(bcolors.HEADER + "    Wercker CI detected." + bcolors.ENDC)
   # http://devcenter.wercker.com/articles/steps/variables.html
@@ -357,8 +357,19 @@ elif "SYSTEM_TEAMFOUNDATIONSERVERURI" in env:
    pr = env.get("PULL_REQUEST_NUMBER")
   job = env.get("BUILD_BUILDID")
   branch = env.get("BUILD_SOURCEBRANCHNAME")
+
+elif env.get("GITHUB_ACTIONS") == "true":
+  print(bcolors.HEADER + "    Github actions CI detected." + bcolors.ENDC)
+  # https://help.github.com/en/actions/configuring-and-managing-workflows/using-environment-variables
+  service = "github-actions"
+  build_id = env.get("GITHUB_ACTION")
+  commit = env.get("GITHUB_SHA")
+  slug = env.get("GITHUB_REPOSITORY")
+  account_name = env.get("GITHUB_ACTOR")
+  root_dir = env.get("GITHUB_WORKSPACE")
+
 else:
-    print(bcolors.HEADER + "    No CI detected." + bcolors.ENDC)
+  print(bcolors.HEADER + "    No CI detected." + bcolors.ENDC)
 
 if args.root_dir:
   root_dir = args.root_dir
@@ -442,7 +453,7 @@ if sys.version_info >= (3, 0):
 else:
   url = urllib.urlopen(url).geturl()
 
-if service and service in ["travis-ci" , "appveyor" , "circle-ci"] and args.token == None:
+if service and service in ["travis-ci" , "appveyor" , "circle-ci", "github-actions"] and args.token == None:
   query["build-id"] = build_id
   url += service + "/"
 

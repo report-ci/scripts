@@ -19,4 +19,5 @@ script:
 - python ./cancel.py --id_file .job3.json
 - python ./queue.py --name "Queue -> Completed" --title "QC Test"
 - python ./upload.py -f cmocka
+- python ./report.py -f cmocka
 - ./test_annotate.sh
