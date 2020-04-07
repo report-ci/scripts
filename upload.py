@@ -64,7 +64,7 @@ if "REPORT_CI_TOKEN" in env and not args.token:
 
 if not args.check_run:
   try:
-    args.check_run = json.loads(open(args.id_file, "r").read())["id"]
+    args.check_run = json.loads(open(args.id_file, "r").read())["github"]
   except:
     pass
 
