@@ -413,7 +413,10 @@ xunit_test = []
 testng_test = []
 criterion_test = []
 complete_content = []
+
 file_list = []
+results = []
+
 bandit = []
 catch_test = []
 cxxtest = []
@@ -469,69 +472,69 @@ for abs_file in file_list:
           print(bcolors.FAIL + "Can't figure out encoding of file " + abs_file + ", ignoring it" + bcolors.ENDC)
           continue
 
-    complete_content.append(content)
+    complete_content.append((abs_file, content))
 
     if ext == ".xml":
       if re.match(r"(<\?[^?]*\?>\s*)?<(?:TestResult|TestLog)>\s*<TestSuite", content):
         print("    Found " + abs_file + " looks like boost.test")
-        boost_test.append(content)
+        boost_test.append((abs_file, content))
         continue
 
       if re.match(r"(<\?[^?]*\?>\s*)?<TestCase", content) and (content.find("<QtVersion>") != -1 or content.find("<qtversion>") != -1):
         print("    Found " + abs_file + ", looks like qtest")
-        qtest.append(content)
+        qtest.append((abs_file, content))
         continue
 
       if re.match(r'(<\?[^?]*\?>\s*)?<!-- Tests compiled with Criterion v[0-9.]+ -->\s*<testsuites name="Criterion Tests"', content):
         print("    Found " + abs_file + ", looks like criterion")
-        criterion_test.append(content)
+        criterion_test.append((abs_file, content))
         continue
 
       if re.match(r"(<\?[^?]*\?>\s*)?(<testsuites>\s*)?<testsuite[^>]", content): #xUnit thingy
         if content.find('"java.version"') != -1 and (content.find('org.junit') != -1 or content.find('org/junit') != -1 or content.find('org\\junit') != -1):
           print("    Found " + abs_file + ", looks like JUnit")
-          junit_test.append(content)
+          junit_test.append((abs_file, content))
         elif content.find('"java.version"') != -1 and (content.find('org.testng') != -1 or content.find('org/testng') != -1 or content.find('org\    estng') != -1):
           print("    Found " + abs_file + ", looks like TestNG")
-          testng_test.append(content)
+          testng_test.append((abs_file, content))
         elif content.find('"java.version"') == -1 and content.find('<testsuite name="bandit" tests="') != -1:
           print("    Found " + abs_file + ", looks like Bandit")
-          bandit.append(content)
+          bandit.append((abs_file, content))
         elif content.find('.php') != -1:
           print("    Found " + abs_file + ", looks like PHPUnit")
           phpunit += 1
-          xunit_test.append(content)
+          xunit_test.append((abs_file, content))
         elif content.find('.py') != -1:
           print("    Found " + abs_file + ", looks like PyTest")
           pytest += 1
-          xunit_test.append(content)
+          xunit_test.append((abs_file, content))
         else:
           print("    Found " + abs_file + ", looks like some xUnit")
-          xunit_test.append(content)
+          xunit_test.append((abs_file, content))
         continue
 
 
       if re.match(r'(<\?[^?]*\?>\s*)?<Catch\s+name=', content):
         print("    Found " + abs_file + ", looks like catch")
-        catch_test.append(content)
+        catch_test.append((abs_file, content))
         continue
       if re.match(r'(<\?[^?]*\?>\s*)?<stream>\s*<ready-test-suite>', content):
         print("    Found " + abs_file + ", looks like TestUnit")
-        testunit.append(content)
+        testunit.append((abs_file, content))
         continue
       if re.match(r'(<\?[^?]*\?>\s*)?(<!--This file represents the results of running a test suite-->)?<test-results\s+name', content) or \
          re.match(r'(<\?[^?]*\?>\s*)?<test-run id="2"', content):
         print("    Found " + abs_file + ", looks like NUnit")
-        nunit.append(content)
+        nunit.append((abs_file, content))
         continue
       if re.match(r'(<\?[^?]*\?>)?\s*<assemblies', content):
         print("    Found " + abs_file + ", looks like xUnit.net")
-        xunitnet.append(content)
+        xunitnet.append((abs_file, content))
         continue
 
       if re.match(r'(<\?[^?]*\?>)?\s*<doctest', content):
         print("    Found " + abs_file + ", looks like doctest")
-        doctest.append(content)
+        doctest.append((abs_file, content))
         continue
 
 
@@ -541,7 +544,8 @@ for abs_file in file_list:
         json_lines = [json.loads(ln) for ln in lines]
         if all(val in json_lines[0] for val in ["Time", "Action", "Package"]): #assumption
           print("Found " + abs_file + ", looks like GoTest")
-          go_test = go_test + [json.loads(ln) for ln in lines]
+          go_test.append((abs_file, json.dumps(lines)))
+
           continue
       except:
         pass
@@ -550,11 +554,11 @@ for abs_file in file_list:
 
         if "version" in data and "examples" in data and "summary" in data and "summary_line" in data :
           print("Found " + abs_file + ", looks like RSpec")
-          rspec.append(data)
+          mocha.append((abs_file, content))
           continue
         if "stats" in data and "tests" in data and "pending" in data and "passes" in data and "failures" in data:
           print("Found " + abs_file + ", looks like Mocha")
-          mocha.append(data)
+          mocha.append((abs_file, content))
           continue
 
       except:
@@ -571,10 +575,9 @@ for abs_file in file_list:
         ava += 1
       else:
         print("Found " + abs_file + ", looks like TAP")
-      tap_test.append(content)
+      tap_test.append((abs_file, content))
 
 
-upload_content = ""
 content_type = ""
 
 if not args.framework:
@@ -672,117 +675,93 @@ else:
   framework = args.framework
   print(bcolors.HEADER + framework + " selected" + bcolors.ENDC)
 
+content_type = 'application/json'
+results = []
+
 if (framework == "testng"):
-  content_type = "text/xml"
-  upload_content = "<root>" + "".join(testng_test) + "</root>"
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in testng_test]
   if not run_name: run_name = "TestNG";
 elif (framework == "junit"):
-  content_type = "text/xml"
-  upload_content = "<root>" + "".join(xunit_test)  + "".join(junit_test) + "".join(["\n    <file>{0}</file>".format(file) for file in file_list]) + "</root>";
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in xunit_test + testng_test]
   if not run_name: run_name = "JUnit"
 elif framework == "bandit":
-  content_type = "text/xml"
-  upload_content = "<root>" + "".join(bandit) + "</root>"
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in bandit]
   if not run_name: run_name = "Bandit"
 elif (framework == "xunit"):
-  content_type = "text/xml"
-  upload_content = "<root>" + "".join(xunit_test)  + "".join(junit_test) + "".join(["\n    <file>{0}</file>".format(file) for file in file_list]) + "</root>";
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in xunit_test + testng_test]
   if not run_name: run_name = "xUnit"
 elif (framework == "boost"):
-  content_type = "text/xml"
-  upload_content = "<root>" + "".join(boost_test)  + "</root>"
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in boost_test]
   if not run_name: run_name = "boost.test"
 elif (framework == "cmocka"):
-  content_type = "text/xml"
-  upload_content = "<root>" + "".join(xunit_test) + "</root>"
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in xunit_test]
   if not run_name: run_name = "CMocka"
 elif (framework == "criterion"):
-  content_type = "text/xml"
-  upload_content = "<root>" + "".join(criterion_test) + "</root>"
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in criterion_test]
   if not run_name: run_name = "Criterion"
 elif (framework == "catch"):
-  content_type = "text/xml"
-  upload_content = "<root>" + "".join(catch_test) + "</root>"
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in catch_test]
   if not run_name: run_name = "Catch"
 elif (framework == "unity"):
-  content_type = "text/plain"
-  upload_content = "\n".join(complete_content)
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in complete_content]
   if not run_name: run_name = "Unity"
 elif (framework == "cpputest"):
-  content_type = "text/xml"
-  upload_content = "<root>" + "".join(xunit_test) + "</root>"
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in xunit_test]
   if not run_name: run_name = "CppUTest"
 elif (framework == "minitest"):
-  content_type = "text/xml"
-  upload_content = "<root>" + "".join(xunit_test) + "</root>"
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in xunit_test]
   if not run_name: run_name = "Minitest"
 elif (framework == "cute"):
-  content_type = "text/xml"
-  upload_content = "<root>" + "".join(xunit_test) + "</root>"
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in xunit_test]
   if not run_name: run_name = "Cute"
 elif (framework == "doctest"):
-  content_type = "text/xml"
-  upload_content = "<root>" + "".join(doctest) + "</root>"
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in doctest]
   if not run_name: run_name = "Doctest"
 elif framework == "cxxtest":
-  content_type = "text/xml"
-  upload_content = "<root>" + "".join(cxxtest) + "".join(xunit_test) + "</root>"
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in xunit_test]
   if not run_name: run_name = "CxxTest"
 elif framework == "gtest":
-  content_type = "text/xml"
-  upload_content = "<root>" + "".join(xunit_test) + "</root>"
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in xunit_test]
   if not run_name: run_name = "GoogleTest"
 elif framework == "qtest":
-  content_type = "text/xml"
-  upload_content = "<root>" + "".join(qtest) + "</root>"
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in qtest]
   if not run_name: run_name = "QTest"
 elif framework == "testunit":
-  content_type = "text/xml"
-  upload_content = "<root>" + "".join(testunit) + "</root>"
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in testunit]
   if not run_name: run_name = "TestUnit"
 elif framework == "rspec":
-  content_type = "application/json"
-  upload_content = json.dumps(rspec)
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in rspec]
   if not run_name: run_name = "RSpec"
 elif framework == "mocha":
-  content_type = "application/json"
-  upload_content = json.dumps(mocha)
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in mocha]
+
   if not run_name: run_name = "Mocha"
 elif framework == "xunitnet":
-  content_type = "text/xml"
-  upload_content =  "<root>" + "".join(xunitnet) + "</root>"
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in xunitnet]
   if not run_name: run_name = "XUnit.Net"
 elif framework == "nunit":
-  content_type = "text/xml"
-  upload_content = "<root>" + "".join(nunit) + "</root>"
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in nunit]
   if not run_name: run_name = "NUnit"
 elif framework == "phpunit":
-  content_type = "text/xml"
-  upload_content = "<root>" + "".join(xunit_test) + "</root>"
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in xunit_test]
   if not run_name: run_name = "PHPUnit"
 elif framework == "pytest":
-  content_type = "text/xml"
-  upload_content = "<root>" + "".join(xunit_test) + "</root>"
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in xunit_test]
   if not run_name: run_name = "PyTest"
 elif framework == "pyunit":
-  content_type = "text/xml"
-  upload_content = "<root>" + "".join(xunit_test) + "</root>"
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in xunit_test]
   if not run_name: run_name = "PyUnit"
 elif (framework == "ava"):
-  content_type = "text/plain"
-  upload_content = "\n".join(tap_test)
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in tap_test]
   if not run_name: run_name = "Ava"
 elif (framework == "qunit"):
-  content_type = "text/plain"
-  upload_content = "\n".join(tap_test)
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in tap_test]
   if not run_name: run_name = "QUnit"
 elif (framework == "tap"):
-  content_type = "text/plain"
-  upload_content = "\n".join(tap_test)
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in tap_test]
   if not run_name: run_name = "Tap"
 elif (framework == "tape"):
-  content_type = "text/plain"
-  upload_content = "\n".join(tap_test)
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in tap_test]
   if not run_name: run_name = "Tape"
 
 elif framework == "mstest":
@@ -801,9 +780,10 @@ elif framework == "mstest":
   if not run_name: run_name = "MSTest";
 
 elif framework == "go-test":
-  content_type = "application/json"
-  upload_content = json.dumps({'files' : file_list, 'test_data': go_test})
+  results = [{'rawData': content, 'framework': framework, 'filename': abs_file} for abs_file, content in go_test]
   if not run_name: run_name = "Go";
+
+upload_content = json.dumps({'files': file_list, "results": results})
 
 upload_content = upload_content.strip()
 if len(upload_content) == 0:
