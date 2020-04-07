@@ -119,7 +119,7 @@ request.get_method = lambda: 'POST'
 try:
   response = urlopen(request).read().decode()
   res = json.loads(response)
-  ch_id = str(res["id"])
+  ch_id = str(res["github"])
   print ('Queued check_run https://github.com/{}/{}/runs/{}'.format(owner, repo, ch_id))
   open(args.id_file, 'w').write(response)
   exit(0)

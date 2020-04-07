@@ -130,7 +130,7 @@ request.add_header("Content-Type",  "text/plain")
 try:
   response = urlopen(request).read().decode()
   res = json.loads(response)
-  ch_id = str(res["id"])
+  ch_id = str(res["github"])
   print ('Canceled check_run https://github.com/{}/{}/runs/{}'.format(owner, repo, ch_id))
   open(args.id_file, 'w').write(response)
   exit(0)
