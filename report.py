@@ -655,15 +655,20 @@ for abs_file in file_list:
         print("Found " + abs_file + ", looks like TAP")
         results.append({'rawData': content, 'framework': 'tap', 'filename': abs_file})
 
-for framework in frameworks:
+incl_frameworks = [arg[len('--include-as-'):] for arg in sys.argv if arg.startswith('--include-as-')]
+incl_frameworks.reverse()
+for framework in incl_frameworks:
   incl = getattr(args, 'include_as_' + framework.replace('-', '_'))
-
   if incl is None:
     continue
 
   for abs_file in (abs_file for abs_file in file_list if match_file(abs_file, incl)):
-    content = open(abs_file).read()
-    results.append({'rawData': content, 'framework': framework, 'filename': abs_file})
+    ##check if it's already in the list
+    try:
+      next(res for res in results if res['filename'] == abs_file)['framework'] = framework
+    except StopIteration:
+      content = open(abs_file).read()
+      results.append({'rawData': content, 'framework': framework, 'filename': abs_file})
 
 logs = []
 for tool in tools:
