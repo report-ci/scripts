@@ -412,12 +412,12 @@ elif env.get("GREENHOUSE") == "true":
   print(bcolors.HEADER + "    Greenhouse CI detected." + bcolors.ENDC)
   # http://docs.greenhouseci.com/docs/environment-variables-files
   service = "greenhouse"
-  branch = "$GREENHOUSE_BRANCH"
-  build = "$GREENHOUSE_BUILD_NUMBER"
+  branch = env.get("GREENHOUSE_BRANCH")
+  build = env.get("GREENHOUSE_BUILD_NUMBER")
   #build_url =urlencode(env.get("GREENHOUSE_BUILD_URL"))
-  pr = "$GREENHOUSE_PULL_REQUEST"
-  commit = "$GREENHOUSE_COMMIT"
-  search_in = env.get("GREENHOUSE_EXPORT_DIR")
+  pr = env.get("GREENHOUSE_PULL_REQUEST")
+  commit = env.get("GREENHOUSE_COMMIT")
+  search_in = search_in + " " + env.get("GREENHOUSE_EXPORT_DIR")
 
 elif "GITLAB_CI" in env:
   print(bcolors.HEADER + "    GitLab CI detected." + bcolors.ENDC)
@@ -449,10 +449,10 @@ elif env.get("GITHUB_ACTIONS") == "true":
   slug = env.get("GITHUB_REPOSITORY")
   account_name = env.get("GITHUB_ACTOR")
   root_dir = env.get("GITHUB_WORKSPACE")
-
+  branch = env.get("GITHUB_REF")
 
   meta = {
-    "service": "github-acttions",
+    "service": "github-actions",
     "workflow": env.get("GITHUB_WORKFLOW"),
     "run":  env.get("GITHUB_RUN_ID"),
     "run-number": env.get("GITHUB_RUN_NUMBER"),
@@ -460,6 +460,15 @@ elif env.get("GITHUB_ACTIONS") == "true":
     "event-name":  env.get("GITHUB_ACTOR")
   }
 
+elif "CI" in env and env.get("BITBUCKET_BUILD_NUMBER") == "true":
+    print(bcolors.HEADER + "    Bitbucket pipelines detected." + bcolors.ENDC)
+    # https://confluence.atlassian.com/bitbucket/variables-in-pipelines-794502608.html
+    service = "bitbucket-pipelines"
+    build_id = env.get("BITBUCKET_BUILD_NUMBER")
+    commit = env.get("BITBUCKET_COMMIT")
+    slug = env.get("BITBUCKET_REPO_FULL_NAME")
+    account_name = env.get("BITBUCKET_REPO_OWNER_UUID")
+    root_dir = env.get("BITBUCKET_CLONE_DIR")
 else:
     print(bcolors.HEADER + "    No CI detected." + bcolors.ENDC)
 
