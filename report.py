@@ -459,7 +459,7 @@ elif env.get("GITHUB_ACTIONS") == "true":
     "action": env.get("GITHUB_ACTION"),
     "event-name":  env.get("GITHUB_ACTOR")
   }
-elif env.get("CI") == "true" and env.get("BITBUCKET_BUILD_NUMBER") == "true":
+elif env.get("CI") == "true" and env.get("BITBUCKET_BUILD_NUMBER"):
     print(bcolors.HEADER + "    Bitbucket pipelines detected." + bcolors.ENDC)
     # https://confluence.atlassian.com/bitbucket/variables-in-pipelines-794502608.html
     service = "bitbucket-pipelines"
@@ -502,6 +502,10 @@ if not owner or not repo:
     repo = match.group(2)
   else:
     match = re.search(r"git@(?:github\.com|bitbucket\.org):([-_A-Za-z0-9]+)\/((?:(?!\.git(?:\s|$))[-._A-Za-z0-9])+)", remote_v)
+    if not match:
+        print(bcolors.FAIL + 'Could not deduce repository slug' + bcolors.ENDC)
+        print(remote_v)
+        exit(1)
     owner = match.group(1)
     repo = match.group(2)
 
