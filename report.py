@@ -459,8 +459,7 @@ elif env.get("GITHUB_ACTIONS") == "true":
     "action": env.get("GITHUB_ACTION"),
     "event-name":  env.get("GITHUB_ACTOR")
   }
-
-elif "CI" in env and env.get("BITBUCKET_BUILD_NUMBER") == "true":
+elif env.get("CI") == "true" and env.get("BITBUCKET_BUILD_NUMBER") == "true":
     print(bcolors.HEADER + "    Bitbucket pipelines detected." + bcolors.ENDC)
     # https://confluence.atlassian.com/bitbucket/variables-in-pipelines-794502608.html
     service = "bitbucket-pipelines"
@@ -497,15 +496,14 @@ if slug:
 
 if not owner or not repo:
   remote_v = subprocess.check_output(["git" ,"remote", "-v"]).decode()
-  match = re.search(r"(?:https://|ssh://git@)github.com/([-_A-Za-z0-9]+)/((?:(?!\.git(?:\s|$))[-._A-Za-z0-9])+)", remote_v)
+  match = re.search(r"(?:https://|ssh://git@)(?:github\.com|bitbucket\.org)/([-_A-Za-z0-9]+)/((?:(?!\.git(?:\s|$))[-._A-Za-z0-9])+)", remote_v)
   if match:
     owner = match.group(1)
     repo = match.group(2)
   else:
-    match = re.search(r"git@github\.com:([-_A-Za-z0-9]+)/((?:(?!\.git(?:\s|$))[-._A-Za-z0-9])+)", remote_v)
+    match = re.search(r"git@(?:github\.com|bitbucket\.org):([-_A-Za-z0-9]+)\/((?:(?!\.git(?:\s|$))[-._A-Za-z0-9])+)", remote_v)
     owner = match.group(1)
     repo = match.group(2)
-
 
 print (bcolors.OKBLUE + "    Project: " + owner + '/' + repo + bcolors.ENDC)
 
@@ -736,7 +734,7 @@ if sys.version_info >= (3, 0):
 else:
   url = urllib.urlopen(url).geturl()
 
-if service and service in ["travis-ci", "appveyor", "circle-ci", "github-actions"] and args.token == None:
+if service and service in ["travis-ci", "appveyor", "circle-ci", "github-actions", "bitbucket-pipelines"] and args.token == None:
   query["build-id"] = build_id
   url += service + "/"
 
