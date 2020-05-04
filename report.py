@@ -745,6 +745,12 @@ if content_type: request.add_header("Content-Type", content_type)
 if args.check_run:
   request.get_method = lambda: 'PATCH'
 
+if len(upload_content) > 10000000: # can be done with one upload
+  print(bcolors.FAIL + "Your data is too large (10MB limit) to be done in one upload." + bcolors.ENDC)
+  print(bcolors.OKBLUE + "You can work around that by splitting up your test data using the --include=* argument over several invocations." + bcolors.ENDC)
+  exit(1)
+
+
 try:
   response = urlopen(request).read().decode()
   print(bcolors.OKGREEN + "Published: '{0}".format(response) + bcolors.ENDC)
